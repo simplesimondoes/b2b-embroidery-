@@ -20653,5 +20653,843 @@ export const PRODUCTS: StaticProduct[] = [
       "weight": 2710,
       "sizeFitHint": "normal fit"
     }
+  },
+  {
+    "id": "2116",
+    "name": "Stanley/Stella Unisex Organic Polo Shirt PREPSTER",
+    "price": 29.99,
+    "preview": "/products/2116/2/1.webp",
+    "embroidery": true,
+    "modelImageFront": null,
+    "appearances": [
+      {
+        "id": "655",
+        "name": "heather white",
+        "color": "#EBEBEB",
+        "image": "/products/2116/655/1.webp",
+        "printTypes": [
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/655/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/655/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "741",
+        "name": "burgundy",
+        "color": "#761F32",
+        "image": "/products/2116/741/1.webp",
+        "printTypes": [
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/741/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/741/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "742",
+        "name": "anthracite",
+        "color": "#5F5F5F",
+        "image": "/products/2116/742/1.webp",
+        "printTypes": [
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/742/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/742/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "947",
+        "name": "soft Ecru",
+        "color": "#EFE9D7",
+        "image": "/products/2116/947/1.webp",
+        "printTypes": [
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/947/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/947/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "950",
+        "name": "majorelle blue",
+        "color": "#254E98",
+        "image": "/products/2116/950/1.webp",
+        "printTypes": [
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/950/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/950/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "1188",
+        "name": "khaki",
+        "color": "#635840",
+        "image": "/products/2116/1188/1.webp",
+        "printTypes": [
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/1188/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/1188/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "1189",
+        "name": "stargazer",
+        "color": "#48646B",
+        "image": "/products/2116/1189/1.webp",
+        "printTypes": [
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/1189/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/1189/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "1224",
+        "name": "latte",
+        "color": "#A1764B",
+        "image": "/products/2116/1224/1.webp",
+        "printTypes": [
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/1224/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/1224/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "1485",
+        "name": "glazed green",
+        "color": "#13413E",
+        "image": "/products/2116/1485/1.webp",
+        "printTypes": [
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/1485/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/1485/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "1486",
+        "name": "bubble pink",
+        "color": "#DE8AAC",
+        "image": "/products/2116/1486/1.webp",
+        "printTypes": [
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/1486/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/1486/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "1",
+        "name": "white",
+        "color": "#FFFFFF",
+        "image": "/products/2116/1/1.webp",
+        "printTypes": [
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/1/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/1/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "name": "black",
+        "color": "#000000",
+        "image": "/products/2116/2/1.webp",
+        "printTypes": [
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/2/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/2/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "196",
+        "name": "red",
+        "color": "#D41C28",
+        "image": "/products/2116/196/1.webp",
+        "printTypes": [
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/196/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/196/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "348",
+        "name": "navy",
+        "color": "#353D56",
+        "image": "/products/2116/348/1.webp",
+        "printTypes": [
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/348/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/348/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "231",
+        "name": "heather grey",
+        "color": "#BEBEBE",
+        "image": "/products/2116/231/1.webp",
+        "printTypes": [
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/231/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/231/2.webp"
+          }
+        ]
+      },
+      {
+        "id": "63",
+        "name": "sky blue",
+        "color": "#BAD0E4",
+        "image": "/products/2116/63/1.webp",
+        "printTypes": [
+          {
+            "id": "33",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/33"
+          },
+          {
+            "id": "34",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/34"
+          },
+          {
+            "id": "8",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/8"
+          },
+          {
+            "id": "14",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/14"
+          },
+          {
+            "id": "16",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/16"
+          },
+          {
+            "id": "32",
+            "href": "https://api.spreadshirt.net/api/v1/shops/205909/printTypes/32"
+          }
+        ],
+        "views": [
+          {
+            "id": "1",
+            "image": "/products/2116/63/1.webp"
+          },
+          {
+            "id": "2",
+            "image": "/products/2116/63/2.webp"
+          }
+        ]
+      }
+    ],
+    "views": [
+      {
+        "id": "1",
+        "name": "Front",
+        "canvas": {
+          "width": 710.9867039888034,
+          "height": 710.9867039888034,
+          "unit": "mm"
+        },
+        "dpi": 42.87,
+        "viewMaps": [
+          {
+            "printAreaId": "6250",
+            "offset": {
+              "x": 391.043,
+              "y": 140.42,
+              "unit": "mm"
+            },
+            "size": {
+              "width": 710.9867039888034,
+              "height": 710.9867039888034,
+              "unit": "mm"
+            },
+            "dpi": 42.87
+          },
+          {
+            "printAreaId": "6322",
+            "offset": {
+              "x": 204.409,
+              "y": 135.087,
+              "unit": "mm"
+            },
+            "size": {
+              "width": 710.9867039888034,
+              "height": 710.9867039888034,
+              "unit": "mm"
+            },
+            "dpi": 42.87
+          }
+        ]
+      },
+      {
+        "id": "2",
+        "name": "Back",
+        "canvas": {
+          "width": 710.9867039888034,
+          "height": 710.9867039888034,
+          "unit": "mm"
+        },
+        "dpi": 42.87,
+        "viewMaps": [
+          {
+            "printAreaId": "6251",
+            "offset": {
+              "x": 250.623,
+              "y": 87.0959,
+              "unit": "mm"
+            },
+            "size": {
+              "width": 710.9867039888034,
+              "height": 710.9867039888034,
+              "unit": "mm"
+            },
+            "dpi": 42.87
+          },
+          {
+            "printAreaId": "6323",
+            "offset": {
+              "x": 204.409,
+              "y": 135.087,
+              "unit": "mm"
+            },
+            "size": {
+              "width": 710.9867039888034,
+              "height": 710.9867039888034,
+              "unit": "mm"
+            },
+            "dpi": 42.87
+          }
+        ]
+      }
+    ],
+    "sizes": [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "XXL",
+      "3XL"
+    ],
+    "printAreas": [
+      {
+        "id": "6250",
+        "defaultViewId": "1",
+        "boundary": {
+          "width": 99.53813855843246,
+          "height": 99.53813855843246,
+          "unit": "mm"
+        },
+        "restrictions": {
+          "textAllowed": true,
+          "designAllowed": true,
+          "backgroundAllowed": false
+        },
+        "printoutQuantity": 1
+      },
+      {
+        "id": "6322",
+        "defaultViewId": "1",
+        "boundary": {
+          "width": 300.39188243526945,
+          "height": 399.9300209937019,
+          "unit": "mm"
+        },
+        "restrictions": {
+          "textAllowed": true,
+          "designAllowed": true,
+          "backgroundAllowed": false
+        },
+        "printoutQuantity": 1
+      },
+      {
+        "id": "6251",
+        "defaultViewId": "2",
+        "boundary": {
+          "width": 209.741077676697,
+          "height": 209.741077676697,
+          "unit": "mm"
+        },
+        "restrictions": {
+          "textAllowed": true,
+          "designAllowed": true,
+          "backgroundAllowed": false
+        },
+        "printoutQuantity": 1
+      },
+      {
+        "id": "6323",
+        "defaultViewId": "2",
+        "boundary": {
+          "width": 300.39188243526945,
+          "height": 399.9300209937019,
+          "unit": "mm"
+        },
+        "restrictions": {
+          "textAllowed": true,
+          "designAllowed": true,
+          "backgroundAllowed": false
+        },
+        "printoutQuantity": 1
+      }
+    ],
+    "details": {
+      "shortDescription": "Classic unisex polo shirt made from 100% cotton (from organic production). Brand: Stanley/Stella",
+      "description": "<ul class=\"listMCE\"><li>The color “soft ecru” has a heathered effect</li>\n<li>\nUnisex polo shirt with flat rib knit on collar and cuffs\n</li><li>\n2-button placket with matching coloured buttons\n</li><li>\nSide slits with heavy single-jersey lining\n</li><li>\nStructured piqué fabric: 240 g/m²\n</li><li>\nMaterial: 100% cotton (from organic production)\n</li><li>\nBrand: Stanley/Stella\n</li><li>Model: Prepster 2.0</li>\n</ul>",
+      "brand": "Stanley Stella",
+      "weight": 1010,
+      "sizeFitHint": "normal fit"
+    }
   }
 ]

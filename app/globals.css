@@ -136,6 +136,39 @@
   }
 }
 
+/* Gentle, endless up/down hover for the hero product images.
+   Uses the independent `translate` property so it composes with each
+   element's Tailwind rotate without overriding it. Max 5px displacement. */
+@keyframes hero-float-up {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -16px;
+  }
+}
+@keyframes hero-float-down {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 16px;
+  }
+}
+.hero-float-a {
+  animation: hero-float-up 5s ease-in-out infinite;
+}
+.hero-float-b {
+  animation: hero-float-down 7s ease-in-out infinite;
+  animation-delay: -2s;
+}
+.hero-float-c {
+  animation: hero-float-up 8.5s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
 /* Size-pill enter: pill grows width + bounce scale + opacity 0 → 1.
    Animating max-width + padding makes the row push neighbors smoothly. */
 @keyframes size-pill-pop {

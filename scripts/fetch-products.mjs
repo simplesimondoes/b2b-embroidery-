@@ -22,7 +22,7 @@ const PINNED_PRODUCT_IDS = [
   "2940", "812", "813", "814", "1047", "20", "1505", "3980", "3001", "4312",
   "56", "4133", "2973", "1040", "4562", "15", "4180", "4181", "4182", "31",
   "1313", "1470", "4506", "1459", "4505", "943", "916", "917", "1300", "1301",
-  "1302",
+  "1302", "2116",
 ]
 // Always include these product type IDs in addition to the auto-categorized
 // list (or to replace them if the categorizer doesn't pick them).
