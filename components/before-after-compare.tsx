@@ -78,7 +78,7 @@ export default function BeforeAfterCompare() {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={Math.round(pos)}
-      className="relative aspect-[1058/1458] h-[340px] max-h-full max-w-full cursor-ew-resize touch-none overflow-hidden rounded-2xl select-none"
+      className="relative aspect-[1203/1019] h-[340px] max-h-full max-w-full cursor-ew-resize touch-none overflow-hidden rounded-2xl select-none"
     >
       {/* Embroidery — clipped to the right of the handle only, so it never
           shows through any transparent areas of the graphic on the left. */}

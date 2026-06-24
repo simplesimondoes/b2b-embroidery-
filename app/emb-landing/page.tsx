@@ -17,7 +17,8 @@ export default function EmbLandingPage() {
   return (
     <main className="min-h-screen bg-white">
       <EmbLandingHeader />
-      <section className="relative mb-[100px] flex h-[560px] w-full items-center justify-center overflow-hidden">
+      <div className="relative mb-[100px]">
+        <section className="relative flex h-[560px] w-full items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
           style={{ backgroundImage: "url('/images/emb-bg.png')" }}
@@ -30,12 +31,6 @@ export default function EmbLandingPage() {
             src="/products/56/404/1.webp"
             alt=""
             className="hero-float-a absolute top-[9%] left-[6%] w-[22rem] rotate-[10deg] blur-[2px]"
-          />
-          {/* baseball cap — white — right side */}
-          <img
-            src="/products/15/10/1.webp"
-            alt=""
-            className="hero-float-b absolute right-[3%] bottom-[-16%] w-100 -rotate-[-32deg] blur-[0px]"
           />
           {/* polo — soft ecru */}
           <img
@@ -50,9 +45,20 @@ export default function EmbLandingPage() {
           <h1 className="font-display text-3xl font-[900] tracking-tight text-white sm:text-4xl">
 GET YOUR DESIGN EMBROIDERED
           </h1>
-          <GradientButton>Upload or design now</GradientButton>
+          <GradientButton>Create now</GradientButton>
         </div>
-      </section>
+        </section>
+
+        {/* Baseball cap lives outside the hero's overflow-hidden so its bottom
+            isn't clipped — it hangs past the hero's bottom edge. */}
+        <div className="pointer-events-none absolute top-0 left-1/2 z-20 h-[560px] w-full max-w-[1600px] -translate-x-1/2">
+          <img
+            src="/products/15/10/1.webp"
+            alt=""
+            className="hero-float-b absolute right-[3%] bottom-[-16%] w-100 -rotate-[-32deg]"
+          />
+        </div>
+      </div>
 
       {/* Tabs + product carousel below the hero */}
       <ProductsSection tiles={embroideryTiles} />
