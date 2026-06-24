@@ -1,12 +1,23 @@
 import BeforeAfterCompare from "@/components/before-after-compare"
 import EmbLandingHeader from "@/components/emb-landing-header"
 import GradientButton from "@/components/gradient-button"
+import ProductsSection from "@/components/products-section"
+import { PRODUCTS } from "@/lib/products-data"
 
 export default function EmbLandingPage() {
+  const embroideryTiles = PRODUCTS.filter(p => p.embroidery).map(p => ({
+    id: p.id,
+    image: p.preview || p.appearances[0]?.image || "",
+    price: p.price.toFixed(2).replace(".", ",") + " €",
+    brand: p.details.brand || "",
+    name: p.name,
+    colors: p.appearances.map(a => a.color),
+  }))
+
   return (
     <main className="min-h-screen bg-white">
       <EmbLandingHeader />
-      <section className="relative flex h-[560px] w-full items-center justify-center overflow-hidden">
+      <section className="relative mb-[100px] flex h-[560px] w-full items-center justify-center overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
           style={{ backgroundImage: "url('/images/emb-bg.png')" }}
@@ -37,11 +48,14 @@ export default function EmbLandingPage() {
         <div className="relative z-10 flex flex-col items-center gap-6 px-8 text-center">
           <BeforeAfterCompare />
           <h1 className="font-display text-3xl font-[900] tracking-tight text-white sm:text-4xl">
-            KLEIDUNG BESTICKEN LASSEN
+GET YOUR DESIGN EMBROIDERED
           </h1>
-          <GradientButton>Dein Stickdesign gestalten</GradientButton>
+          <GradientButton>Upload or design now</GradientButton>
         </div>
       </section>
+
+      {/* Tabs + product carousel below the hero */}
+      <ProductsSection tiles={embroideryTiles} />
     </main>
   )
 }
