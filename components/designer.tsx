@@ -167,6 +167,21 @@ export default function Designer() {
   // True while actively dragging/resizing an element — the on-canvas embroidery
   // preview drops to the live, flat element during manipulation, then returns.
   const [isManipulating, setIsManipulating] = useState(false)
+  // On-canvas embroidery: after the design settles, wait ~1s (showing a spinner
+  // over the design) before revealing the stitched render — no opacity fade.
+  const [embroideryShown, setEmbroideryShown] = useState(false)
+  const [embroideryLoading, setEmbroideryLoading] = useState(false)
+  // Source image fed to the embroidery renderer. Only updated when the design's
+  // *appearance* (not its position) changes, so moving never regenerates it.
+  const [embroiderySrc, setEmbroiderySrc] = useState<string | null>(null)
+  const lastEmbroiderySigRef = useRef<string | null>(null)
+  // True between a drag/resize release and the next flatten completing — keeps
+  // the flat element visible (no spinner) until the position settles, so the
+  // stitched render appears at the final spot with no jump.
+  const [embroiderySettling, setEmbroiderySettling] = useState(false)
+  // True while a new stitched render is being computed (appearance changed) —
+  // shows the spinner until the render is ready.
+  const [embroideryRenderStale, setEmbroideryRenderStale] = useState(false)
 
   // Print technique (only relevant for embroidery-suitable products).
   const [printTechnique, setPrintTechnique] = useState<"standard" | "embroidery">("embroidery")
@@ -510,10 +525,15 @@ export default function Designer() {
       setIsManipulating(false)
       if (resizeStateRef.current) {
         resizeStateRef.current = null
+        // Resize changed the design — wait for the flatten before revealing.
+        setEmbroiderySettling(true)
         return
       }
       const ds = dragStateRef.current
       if (!ds) return
+      // A move happened — wait for the flatten to settle the position so the
+      // stitched render reappears at the final spot without jumping.
+      if (ds.moved) setEmbroiderySettling(true)
       // Always select on mouseup so a drag keeps the element as the active selection.
       if (ds.kind === "graphic") {
         setSelectedGraphicId(ds.id)
@@ -720,13 +740,58 @@ export default function Designer() {
     t: visibleTextElements.map(t => [t.x, t.y, t.content, t.fontSize, t.fontFamily, t.color]),
     g: visibleGraphicElements.map(g => [g.x, g.y, g.width, g.height, g.src]),
   })
-  // The stitched render is mounted whenever embroidery is the chosen technique
-  // and a render exists; its opacity cross-fades with the flat elements beneath
-  // so flat <-> stitched is smooth. It fades out only while actively
-  // manipulating or text-editing (revealing the live, editable element).
-  const embroideryReady =
-    printTechnique === "embroidery" && !!embroideryRenderedUrl && !!designBbox
-  const canvasEmbroideryVisible = embroideryReady && !isManipulating && !editingTextId
+  // Appearance signature, normalized to the design's top-left so a pure
+  // translation (single element, or whole design) leaves it unchanged — used to
+  // decide when the stitched render actually needs regenerating.
+  const designEls = [...visibleTextElements, ...visibleGraphicElements]
+  const designMinX = designEls.length ? Math.min(...designEls.map(e => e.x)) : 0
+  const designMinY = designEls.length ? Math.min(...designEls.map(e => e.y)) : 0
+  const embroiderySignature = JSON.stringify({
+    t: visibleTextElements.map(t => [
+      t.x - designMinX,
+      t.y - designMinY,
+      t.content,
+      t.fontSize,
+      t.fontFamily,
+      t.color,
+    ]),
+    g: visibleGraphicElements.map(g => [
+      g.x - designMinX,
+      g.y - designMinY,
+      g.width,
+      g.height,
+      g.src,
+    ]),
+  })
+  // Decide what shows on the canvas for the embroidery technique:
+  //  - manipulating/editing  -> flat element (no spinner)
+  //  - settling (just released) -> flat element, wait for the position to settle
+  //  - render stale / not ready -> spinner (a new stitched render is computing)
+  //  - otherwise -> the stitched render
+  useEffect(() => {
+    const shouldEmbroider =
+      printTechnique === "embroidery" && !!designBbox && !isManipulating && !editingTextId
+    if (!shouldEmbroider || embroiderySettling) {
+      setEmbroideryShown(false)
+      setEmbroideryLoading(false)
+      return
+    }
+    if (embroideryRenderStale || !embroideryRenderedUrl) {
+      setEmbroideryShown(false)
+      setEmbroideryLoading(true)
+      return
+    }
+    setEmbroideryShown(true)
+    setEmbroideryLoading(false)
+  }, [
+    printTechnique,
+    designBbox,
+    embroideryRenderedUrl,
+    isManipulating,
+    editingTextId,
+    embroiderySettling,
+    embroideryRenderStale,
+  ])
 
   // Embroidery clamps the design to a max area; warn when that shrinks it by >20%.
   const embroiderySizeWarning = (() => {
@@ -744,15 +809,24 @@ export default function Designer() {
     const wantPreview = printTechniqueOpen || printTechnique === "embroidery"
     if (!wantPreview) {
       setDesignDataUrl(null)
+      setEmbroiderySrc(null)
+      lastEmbroiderySigRef.current = null
       setEmbroideryRenderedUrl(null)
       setDesignBbox(null)
       setPreviewLoading(false)
+      setEmbroiderySettling(false)
+      setEmbroideryRenderStale(false)
       return
     }
     // On the canvas, don't regenerate while an element is being edited/dragged —
     // the live editable element is shown instead of the stitched overlay.
     if (!printTechniqueOpen && (isManipulating || editingTextId)) {
       return
+    }
+    // Appearance changed (not just a move) — a new stitched render is needed, so
+    // flag it stale up front to show the spinner immediately.
+    if (embroiderySignature !== lastEmbroiderySigRef.current) {
+      setEmbroideryRenderStale(true)
     }
     let cancelled = false
     if (printTechniqueOpen) {
@@ -780,7 +854,11 @@ export default function Designer() {
       if ((texts.length === 0 && graphics.length === 0) || baseW <= 1 || baseH <= 1) {
         if (!cancelled) {
           setDesignDataUrl(null)
+          setEmbroiderySrc(null)
+          lastEmbroiderySigRef.current = null
           setDesignBbox(null)
+          setEmbroiderySettling(false)
+          setEmbroideryRenderStale(false)
         }
         return
       }
@@ -798,23 +876,31 @@ export default function Designer() {
       canvas.height = H
       const ctx = canvas.getContext("2d")
       if (!ctx) return
-      // Text first, graphics on top — matches the editor's layer order.
+      // Text first, graphics on top — matches the editor's layer order. Draw
+      // positions are rounded so a pure move yields a byte-identical crop (the
+      // stitched render is then reused instead of regenerated).
       for (const t of texts) {
         ctx.fillStyle = t.color
         ctx.textBaseline = "top"
         const fontSize = t.fontSize * scale
         ctx.font = `${fontSize}px "${t.fontFamily}"`
-        const x = (t.x / 100) * W
+        const x = Math.round((t.x / 100) * W)
         let y = (t.y / 100) * H
         for (const line of t.content.split("\n")) {
-          ctx.fillText(line, x, y)
+          ctx.fillText(line, x, Math.round(y))
           y += fontSize
         }
       }
       for (const g of graphics) {
         const img = await loadImage(g.src).catch(() => null)
         if (!img) continue
-        ctx.drawImage(img, (g.x / 100) * W, (g.y / 100) * H, (g.width / 100) * W, (g.height / 100) * H)
+        ctx.drawImage(
+          img,
+          Math.round((g.x / 100) * W),
+          Math.round((g.y / 100) * H),
+          Math.round((g.width / 100) * W),
+          Math.round((g.height / 100) * H)
+        )
       }
       // Crop to the design's content bounding box.
       const { data } = ctx.getImageData(0, 0, W, H)
@@ -835,7 +921,11 @@ export default function Designer() {
       if (!found) {
         if (!cancelled) {
           setDesignDataUrl(null)
+          setEmbroiderySrc(null)
+          lastEmbroiderySigRef.current = null
           setDesignBbox(null)
+          setEmbroiderySettling(false)
+          setEmbroideryRenderStale(false)
         }
         return
       }
@@ -846,9 +936,21 @@ export default function Designer() {
       cropped.height = ch
       cropped.getContext("2d")!.drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch)
       if (!cancelled) {
-        setDesignDataUrl(cropped.toDataURL("image/png"))
-        // Bounding box as fractions of the print area, for accurate model placement.
+        const url = cropped.toDataURL("image/png")
+        setDesignDataUrl(url)
+        // Bounding box as fractions of the print area, for accurate placement.
         setDesignBbox({ x: minX / W, y: minY / H, w: cw / W, h: ch / H })
+        // Position has now settled at the final spot.
+        setEmbroiderySettling(false)
+        // Only feed a new image to the embroidery renderer when the appearance
+        // changed — a pure move keeps the same render (it just repositions, and
+        // is therefore not stale).
+        if (embroiderySignature !== lastEmbroiderySigRef.current) {
+          lastEmbroiderySigRef.current = embroiderySignature
+          setEmbroiderySrc(url)
+        } else {
+          setEmbroideryRenderStale(false)
+        }
       }
     }
 
@@ -862,6 +964,7 @@ export default function Designer() {
     printTechniqueOpen,
     printTechnique,
     designSignature,
+    embroiderySignature,
     printAreaPxSize.width,
     printAreaPxSize.height,
     isManipulating,
@@ -1645,14 +1748,12 @@ export default function Designer() {
                   {/* Stitched embroidery preview, overlaid on the design's
                       footprint. Pointer-events pass through so clicking an
                       element beneath selects it and reveals the editable version. */}
-                  {embroideryReady && designBbox && embroideryRenderedUrl && (
+                  {embroideryShown && designBbox && embroideryRenderedUrl && (
                     <img
                       src={embroideryRenderedUrl}
                       alt=""
                       draggable={false}
-                      className={`pointer-events-none absolute select-none transition-opacity duration-200 ease-out ${
-                        canvasEmbroideryVisible ? "opacity-100" : "opacity-0"
-                      }`}
+                      className="pointer-events-none absolute select-none"
                       style={{
                         left: `${designBbox.x * 100}%`,
                         top: `${designBbox.y * 100}%`,
@@ -1661,6 +1762,20 @@ export default function Designer() {
                       }}
                     />
                   )}
+                  {/* While waiting to reveal the stitched render, a spinner sits
+                      over the design (the flat design stays visible beneath). */}
+                  {embroideryLoading && designBbox && (
+                    <div
+                      className="pointer-events-none absolute flex items-center justify-center"
+                      style={{
+                        left: `${(designBbox.x + designBbox.w / 2) * 100}%`,
+                        top: `${(designBbox.y + designBbox.h / 2) * 100}%`,
+                        transform: "translate(-50%, -50%)",
+                      }}
+                    >
+                      <div className="h-7 w-7 animate-spin rounded-full border-2 border-black/20 border-t-black" />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1668,11 +1783,14 @@ export default function Designer() {
 
             {/* Off-screen embroidery renderer — turns the flattened design into
                 the stitched look whenever embroidery is the chosen technique. */}
-            {printTechnique === "embroidery" && designDataUrl && (
+            {printTechnique === "embroidery" && embroiderySrc && (
               <EmbroideryPreview
-                src={designDataUrl}
+                src={embroiderySrc}
                 maxSize={500}
-                onRendered={setEmbroideryRenderedUrl}
+                onRendered={url => {
+                  setEmbroideryRenderedUrl(url)
+                  setEmbroideryRenderStale(false)
+                }}
                 style={{
                   position: "absolute",
                   opacity: 0,
