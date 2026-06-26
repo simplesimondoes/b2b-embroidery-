@@ -8,13 +8,13 @@ import React, { useEffect, useRef } from "react"
 
 const SETTINGS = {
   quantStep: 1,
-  stitchDensity: 5,
+  stitchDensity: 8,
   stitchLength: 20,
   stitchVisibility: 280,
   edgeCleanliness: 0,
   edgeShadow: 40,
-  embossStrength: 680,
-  embossThickness: 7,
+  embossStrength: 880,
+  embossThickness: 14,
   shineAmount: 0,
 }
 

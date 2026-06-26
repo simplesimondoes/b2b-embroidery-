@@ -9,6 +9,7 @@ import ProductsDrawer, { type SelectedProduct } from "@/components/products-draw
 import SiteHeader from "@/components/site-header"
 import { IconsScroller } from "@/components/ui/icons-scroller"
 import { EditorBar } from "@/components/ui/editor-bar"
+import { GraphicEditorBar } from "@/components/ui/editor-bar/GraphicEditorBar"
 import { WedgeSlider } from "@/components/ui/editor-bar/WedgeSlider"
 import {
   ScopedDialog,
@@ -95,12 +96,43 @@ export default function Designer() {
     document.addEventListener("mousedown", onDown)
     return () => document.removeEventListener("mousedown", onDown)
   }, [viewDropdownOpen])
-  // Keep the view centered as the zoom (or product/view) changes.
+  // On zoom, keep the design centered: anchor on the centre of the combined
+  // bounding box of all objects in the print area (treat them as one group).
+  // Falls back to the product centre when there's no design.
   useEffect(() => {
     const el = canvasScrollRef.current
     if (!el) return
-    el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2
-    el.scrollTop = (el.scrollHeight - el.clientHeight) / 2
+    let fx = 0.5
+    let fy = 0.5
+    const pa = printAreaBoxRef.current
+    if (pa && printAreaOverlay) {
+      const rects: DOMRect[] = []
+      for (const t of visibleTextElements) {
+        const n = textElementRefs.current[t.id]
+        if (n) rects.push(n.getBoundingClientRect())
+      }
+      for (const g of visibleGraphicElements) {
+        const n = graphicElementRefs.current[g.id]
+        if (n) rects.push(n.getBoundingClientRect())
+      }
+      if (rects.length) {
+        const paRect = pa.getBoundingClientRect()
+        const minX = Math.min(...rects.map(r => r.left))
+        const maxX = Math.max(...rects.map(r => r.right))
+        const minY = Math.min(...rects.map(r => r.top))
+        const maxY = Math.max(...rects.map(r => r.bottom))
+        // group centre as a fraction of the print area, then of the whole content
+        const gcx = paRect.width ? ((minX + maxX) / 2 - paRect.left) / paRect.width : 0.5
+        const gcy = paRect.height ? ((minY + maxY) / 2 - paRect.top) / paRect.height : 0.5
+        fx = (printAreaOverlay.left + gcx * printAreaOverlay.width) / 100
+        fy = (printAreaOverlay.top + gcy * printAreaOverlay.height) / 100
+      }
+    }
+    const maxScrollX = el.scrollWidth - el.clientWidth
+    const maxScrollY = el.scrollHeight - el.clientHeight
+    el.scrollLeft = Math.max(0, Math.min(maxScrollX, fx * el.scrollWidth - el.clientWidth / 2))
+    el.scrollTop = Math.max(0, Math.min(maxScrollY, fy * el.scrollHeight - el.clientHeight / 2))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [zoom])
   const [activeViewId, setActiveViewId] = useState("1")
   const [productsDrawerOpen, setProductsDrawerOpen] = useState(false)
@@ -282,7 +314,8 @@ export default function Designer() {
         x,
         y,
         color,
-        fontSize,
+        // Stored at zoom-1 scale; rendered as fontSize * zoom.
+        fontSize: fontSize / zoom,
         fontFamily: DEFAULT_FONT_FAMILY,
       },
     ])
@@ -390,6 +423,23 @@ export default function Designer() {
     if (!selectedGraphicId) return
     setGraphicElements(prev => prev.filter(g => g.id !== selectedGraphicId))
     setSelectedGraphicId(null)
+  }
+
+  const duplicateSelectedGraphic = () => {
+    if (!selectedGraphicId) return
+    const src = graphicElements.find(g => g.id === selectedGraphicId)
+    if (!src) return
+    const newId = uid("graphic")
+    setGraphicElements(prev => [
+      ...prev,
+      {
+        ...src,
+        id: newId,
+        x: Math.max(0, Math.min(100 - src.width, src.x + 5)),
+        y: Math.max(0, Math.min(100 - src.height, src.y + 5)),
+      },
+    ])
+    setSelectedGraphicId(newId)
   }
 
   // Backspace / Delete removes the selected text — only when not actively typing
@@ -878,8 +928,10 @@ export default function Designer() {
     const flatten = async () => {
       const texts = visibleTextElements
       const graphics = visibleGraphicElements
-      const baseW = printAreaPxSize.width
-      const baseH = printAreaPxSize.height
+      // Normalize to zoom-1 so the rendered design (designBbox fractions) is
+      // zoom-independent and matches the flat text (which renders at fontSize*zoom).
+      const baseW = printAreaPxSize.width / zoom
+      const baseH = printAreaPxSize.height / zoom
       if ((texts.length === 0 && graphics.length === 0) || baseW <= 1 || baseH <= 1) {
         if (!cancelled) {
           setDesignDataUrl(null)
@@ -1126,12 +1178,14 @@ export default function Designer() {
   const MIN_GRAPHIC_WIDTH_PCT = 5
   const maxFontSize = useMemo(
     () =>
+      // /zoom: fontSize is stored at zoom-1 scale but printAreaPxSize is measured
+      // at the current zoom.
       computeMaxFontSize(
         selectedText?.content ?? "",
         printAreaPxSize.width,
         printAreaPxSize.height
-      ),
-    [selectedText?.content, printAreaPxSize.width, printAreaPxSize.height]
+      ) / zoom,
+    [selectedText?.content, printAreaPxSize.width, printAreaPxSize.height, zoom]
   )
 
   // Auto-clamp the selected text's fontSize if its content makes the current size overflow.
@@ -1678,7 +1732,7 @@ export default function Designer() {
                   {visibleTextElements.map(el =>
                     editingTextId === el.id ? (
                       (() => {
-                        const box = measureTextBox(el.content, el.fontSize, el.fontFamily)
+                        const box = measureTextBox(el.content, el.fontSize * zoom, el.fontFamily)
                         return (
                           <textarea
                             key={el.id}
@@ -1702,11 +1756,11 @@ export default function Designer() {
                               left: `${el.x}%`,
                               top: `${el.y}%`,
                               color: el.color,
-                              fontSize: `${el.fontSize}px`,
+                              fontSize: `${el.fontSize * zoom}px`,
                               fontFamily: `"${el.fontFamily}"`,
                               width: `${box.width + 4}px`,
                               height: `${box.height}px`,
-                              minWidth: `${el.fontSize * 0.5}px`,
+                              minWidth: `${el.fontSize * zoom * 0.5}px`,
                               padding: 0,
                               margin: 0,
                               border: "none",
@@ -1740,10 +1794,18 @@ export default function Designer() {
                           position: "absolute",
                           left: `${el.x}%`,
                           top: `${el.y}%`,
-                          color: el.color,
-                          fontSize: `${el.fontSize}px`,
+                          // Hide the flat glyphs while the stitched overlay is
+                          // shown (avoids the flat/render double-image); keep the
+                          // selection outline + handles visible.
+                          color: embroideryShown ? "transparent" : el.color,
+                          fontSize: `${el.fontSize * zoom}px`,
                           fontFamily: `"${el.fontFamily}"`,
                           whiteSpace: "pre",
+                          // Size exactly to the text so the selection box + handles
+                          // always wrap the rendered glyphs (no shrink-to-fit wrap
+                          // from the absolutely-positioned containing block).
+                          width: "max-content",
+                          maxWidth: "none",
                           boxShadow:
                             selectedTextId === el.id ? "0 0 0 1px #6366F1" : undefined,
                         }}
@@ -1768,7 +1830,7 @@ export default function Designer() {
                               <span
                                 key={corner}
                                 onMouseDown={e => startResize(e, el, corner)}
-                                className={`absolute ${pos} ${cursor} block size-[15px] rounded-full border-2 border-[#6366F1] bg-white`}
+                                className={`absolute ${pos} ${cursor} z-30 block size-[15px] rounded-full border-2 border-[#6366F1] bg-white`}
                               />
                             )
                           })}
@@ -1799,7 +1861,9 @@ export default function Designer() {
                         src={el.src}
                         alt=""
                         draggable={false}
-                        className="pointer-events-none h-full w-full select-none object-contain"
+                        className={`pointer-events-none h-full w-full select-none object-contain ${
+                          embroideryShown ? "opacity-0" : ""
+                        }`}
                       />
                       {selectedGraphicId === el.id &&
                         (["nw", "ne", "sw", "se"] as const).map(corner => {
@@ -1842,18 +1906,19 @@ export default function Designer() {
                       }}
                     />
                   )}
-                  {/* While waiting to reveal the stitched render, a spinner sits
-                      over the design (the flat design stays visible beneath). */}
+                  {/* While waiting to reveal the stitched render, a loader sits at
+                      the top of the design (so it isn't hidden behind it): a black
+                      circle with a light spinner. */}
                   {embroideryLoading && designBbox && (
                     <div
-                      className="pointer-events-none absolute flex items-center justify-center"
+                      className="pointer-events-none absolute flex items-center justify-center rounded-full bg-black p-2.5 shadow-lg"
                       style={{
                         left: `${(designBbox.x + designBbox.w / 2) * 100}%`,
-                        top: `${(designBbox.y + designBbox.h / 2) * 100}%`,
+                        top: `${designBbox.y * 100}%`,
                         transform: "translate(-50%, -50%)",
                       }}
                     >
-                      <div className="h-7 w-7 animate-spin rounded-full border-2 border-black/20 border-t-black" />
+                      <div className="h-7 w-7 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
                     </div>
                   )}
                 </div>
@@ -1888,7 +1953,7 @@ export default function Designer() {
                 <button
                   type="button"
                   aria-label="Zoom in"
-                  onClick={() => setZoom(z => Math.min(3, Math.round((z + 0.25) * 100) / 100))}
+                  onClick={() => setZoom(z => Math.min(6, Math.round((z + 0.25) * 100) / 100))}
                   className="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full text-black hover:bg-neutral-100"
                 >
                   <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor" aria-hidden="true">
@@ -1905,7 +1970,7 @@ export default function Designer() {
               </div>
               <div className="flex h-24 w-6 items-center justify-center">
                 <div className="-rotate-90">
-                  <WedgeSlider min={1} max={3} value={zoom} onChange={setZoom} width={96} />
+                  <WedgeSlider min={1} max={6} value={zoom} onChange={setZoom} width={96} />
                 </div>
               </div>
               <div className="group/tooltip relative flex">
@@ -1973,7 +2038,7 @@ export default function Designer() {
                                   overlay={viewOverlay}
                                   textElements={viewTexts}
                                   graphicElements={viewGraphics}
-                                  displaySize={liveCanvasContentSize}
+                                  displaySize={liveCanvasContentSize / zoom}
                                   size={100}
                                 />
                               </div>
@@ -2276,6 +2341,12 @@ export default function Designer() {
               }
               onDuplicate={duplicateSelectedText}
               onDelete={deleteSelectedText}
+            />
+
+            <GraphicEditorBar
+              show={!!selectedGraphicId && !selectedText}
+              onDuplicate={duplicateSelectedGraphic}
+              onDelete={deleteSelectedGraphic}
             />
 
             <TextColorPanel
