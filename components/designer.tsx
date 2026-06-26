@@ -935,22 +935,70 @@ export default function Designer() {
       cropped.width = cw
       cropped.height = ch
       cropped.getContext("2d")!.drawImage(canvas, minX, minY, cw, ch, 0, 0, cw, ch)
-      if (!cancelled) {
-        const url = cropped.toDataURL("image/png")
-        setDesignDataUrl(url)
-        // Bounding box as fractions of the print area, for accurate placement.
-        setDesignBbox({ x: minX / W, y: minY / H, w: cw / W, h: ch / H })
-        // Position has now settled at the final spot.
-        setEmbroiderySettling(false)
-        // Only feed a new image to the embroidery renderer when the appearance
-        // changed — a pure move keeps the same render (it just repositions, and
-        // is therefore not stale).
-        if (embroiderySignature !== lastEmbroiderySigRef.current) {
-          lastEmbroiderySigRef.current = embroiderySignature
-          setEmbroiderySrc(url)
-        } else {
-          setEmbroideryRenderStale(false)
+      if (cancelled) return
+      const url = cropped.toDataURL("image/png")
+      setDesignDataUrl(url)
+      // Bounding box as fractions of the print area, for accurate placement.
+      const fx = minX / W,
+        fy = minY / H,
+        fw = cw / W,
+        fh = ch / H
+      setDesignBbox({ x: fx, y: fy, w: fw, h: fh })
+      // Position has now settled at the final spot.
+      setEmbroiderySettling(false)
+      // Only feed a new image to the embroidery renderer when the appearance
+      // changed — a pure move keeps the same render (it just repositions, and
+      // is therefore not stale).
+      if (embroiderySignature !== lastEmbroiderySigRef.current) {
+        // Re-render ONLY the design region at a high, size-independent target
+        // resolution. The first pass scales to the whole print area, so a small
+        // design lands on few pixels and the stitch effect looks rough; here the
+        // design's long edge is normalised to ~TARGET_HI px so the embroidery
+        // renderer always gets a crisp, well-sized source.
+        const TARGET_HI = 768
+        const designLongPx = Math.max(fw * baseW, fh * baseH)
+        const scaleHi = Math.min(40, Math.max(1, TARGET_HI / Math.max(designLongPx, 1)))
+        const WF = baseW * scaleHi
+        const HF = baseH * scaleHi
+        const cropW = Math.max(1, Math.round(fw * WF))
+        const cropH = Math.max(1, Math.round(fh * HF))
+        const hi = document.createElement("canvas")
+        hi.width = cropW
+        hi.height = cropH
+        const hctx = hi.getContext("2d")
+        if (hctx) {
+          hctx.imageSmoothingEnabled = true
+          hctx.imageSmoothingQuality = "high"
+          hctx.translate(-fx * WF, -fy * HF)
+          for (const t of texts) {
+            hctx.fillStyle = t.color
+            hctx.textBaseline = "top"
+            const fs = t.fontSize * scaleHi
+            hctx.font = `${fs}px "${t.fontFamily}"`
+            const x = Math.round((t.x / 100) * WF)
+            let y = (t.y / 100) * HF
+            for (const line of t.content.split("\n")) {
+              hctx.fillText(line, x, Math.round(y))
+              y += fs
+            }
+          }
+          for (const g of graphics) {
+            const img = await loadImage(g.src).catch(() => null)
+            if (!img) continue
+            hctx.drawImage(
+              img,
+              Math.round((g.x / 100) * WF),
+              Math.round((g.y / 100) * HF),
+              Math.round((g.width / 100) * WF),
+              Math.round((g.height / 100) * HF)
+            )
+          }
         }
+        if (cancelled) return
+        lastEmbroiderySigRef.current = embroiderySignature
+        setEmbroiderySrc(hctx ? hi.toDataURL("image/png") : url)
+      } else {
+        setEmbroideryRenderStale(false)
       }
     }
 
@@ -1786,7 +1834,7 @@ export default function Designer() {
             {printTechnique === "embroidery" && embroiderySrc && (
               <EmbroideryPreview
                 src={embroiderySrc}
-                maxSize={500}
+                maxSize={768}
                 onRendered={url => {
                   setEmbroideryRenderedUrl(url)
                   setEmbroideryRenderStale(false)
@@ -1803,7 +1851,7 @@ export default function Designer() {
 
             {/* Zoom control — vertical, bottom-left of the canvas area. Plus on
                 top, minus at the bottom; the WedgeSlider is rotated upright. */}
-            <div className="absolute bottom-6 left-6 z-20 flex w-[48px] flex-col items-center gap-1 rounded-full bg-white py-2.5 shadow-xs">
+            <div className="absolute bottom-6 left-6 z-[5] flex w-[48px] flex-col items-center gap-1 rounded-full bg-white py-2.5 shadow-xs">
               <div className="group/tooltip relative flex">
                 <button
                   type="button"
