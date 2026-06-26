@@ -37,7 +37,7 @@ export function EditorBar({
   return (
     <div
       data-editor-bar="true"
-      className="shadow-s absolute top-8 left-1/2 z-[5] flex h-[48px] -translate-x-1/2 items-center overflow-hidden rounded-full bg-white"
+      className="shadow-xs absolute top-8 left-1/2 z-[5] flex h-[48px] -translate-x-1/2 items-center overflow-hidden rounded-full bg-white"
     >
       <div className="flex h-full min-w-0 items-center gap-2 px-1.5 py-1.5">
         {/* Font family */}

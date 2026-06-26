@@ -10,7 +10,7 @@ const SETTINGS = {
   quantStep: 1,
   stitchDensity: 8,
   stitchLength: 20,
-  stitchVisibility: 280,
+  stitchVisibility: 380,
   edgeCleanliness: 0,
   edgeShadow: 40,
   embossStrength: 880,

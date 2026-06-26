@@ -324,6 +324,11 @@ export default function Designer() {
   const [printTechnique, setPrintTechnique] = useState<"standard" | "embroidery">("embroidery")
   const [printTechniqueOpen, setPrintTechniqueOpen] = useState(false)
   const [printTechniqueMenuOpen, setPrintTechniqueMenuOpen] = useState(false)
+  // Some products (stickers, posters, mugs, …) can't be embroidered. For those
+  // the technique is forced to standard print — without overwriting the user's
+  // saved preference, so it returns when they switch back to a textile product.
+  const embroiderySupported = !!productData?.embroidery
+  const effectivePrintTechnique = embroiderySupported ? printTechnique : "standard"
   const [previewLoading, setPreviewLoading] = useState(false)
   // Flattened design (text + graphics combined) for the print-technique close-up,
   // and its embroidery-rendered counterpart.
@@ -950,7 +955,7 @@ export default function Designer() {
   //  - otherwise -> the stitched render
   useEffect(() => {
     const shouldEmbroider =
-      printTechnique === "embroidery" && !!designBbox && !isManipulating && !editingTextId
+      effectivePrintTechnique === "embroidery" && !!designBbox && !isManipulating && !editingTextId
     if (!shouldEmbroider || embroiderySettling) {
       setEmbroideryShown(false)
       setEmbroideryLoading(false)
@@ -974,6 +979,7 @@ export default function Designer() {
     embroideryEverShownRef.current = true
   }, [
     printTechnique,
+    embroiderySupported,
     designBbox,
     embroideryRenderedUrl,
     isManipulating,
@@ -985,7 +991,7 @@ export default function Designer() {
 
   // Embroidery clamps the design to a max area; warn when that shrinks it by >20%.
   const embroiderySizeWarning = (() => {
-    if (!designBbox || printTechnique !== "embroidery") return false
+    if (!designBbox || effectivePrintTechnique !== "embroidery") return false
     const clamped = clampEmbroideryBbox(designBbox)
     const s = Math.sqrt((clamped.w * clamped.h) / (designBbox.w * designBbox.h))
     return s < 0.8
@@ -996,7 +1002,7 @@ export default function Designer() {
   useEffect(() => {
     // Flatten when the technique modal is open OR embroidery is the live
     // technique (so the stitched preview can render on the canvas).
-    const wantPreview = printTechniqueOpen || printTechnique === "embroidery"
+    const wantPreview = printTechniqueOpen || effectivePrintTechnique === "embroidery"
     if (!wantPreview) {
       setDesignDataUrl(null)
       setEmbroiderySrc(null)
@@ -1208,6 +1214,7 @@ export default function Designer() {
   }, [
     printTechniqueOpen,
     printTechnique,
+    embroiderySupported,
     designSignature,
     embroiderySignature,
     isManipulating,
@@ -1438,7 +1445,9 @@ export default function Designer() {
     ...graphicElements.map(g => g.printAreaId),
   ]).size
   const perAreaSurcharge =
-    printTechnique === "embroidery" ? SURCHARGE_EMBROIDERY_PER_AREA : SURCHARGE_STANDARD_PER_AREA
+    effectivePrintTechnique === "embroidery"
+      ? SURCHARGE_EMBROIDERY_PER_AREA
+      : SURCHARGE_STANDARD_PER_AREA
   const unitPrice = BASE_PRICE + decoratedPrintAreaCount * perAreaSurcharge
   const originalPrice = totalSelected > 0 ? unitPrice * totalSelected : unitPrice
   const discountPercent = getDiscountPercentage(totalSelected)
@@ -2009,32 +2018,11 @@ export default function Designer() {
                       src={embroideryRenderedUrl}
                       alt=""
                       draggable={false}
-                      data-graphic-element="true"
-                      onMouseDown={e => {
-                        // The flat (clickable) element is hidden under this
-                        // overlay, so forward the interaction to whichever element
-                        // sits under the pointer — keeps select/drag/delete working.
-                        const hit = (x: number, y: number, node?: HTMLElement) => {
-                          if (!node) return false
-                          const r = node.getBoundingClientRect()
-                          return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
-                        }
-                        for (let i = visibleGraphicElements.length - 1; i >= 0; i--) {
-                          const g = visibleGraphicElements[i]
-                          if (hit(e.clientX, e.clientY, graphicElementRefs.current[g.id])) {
-                            startGraphicDrag(e, g)
-                            return
-                          }
-                        }
-                        for (let i = visibleTextElements.length - 1; i >= 0; i--) {
-                          const t = visibleTextElements[i]
-                          if (hit(e.clientX, e.clientY, textElementRefs.current[t.id])) {
-                            startTextDrag(e, t)
-                            return
-                          }
-                        }
-                      }}
-                      className="absolute cursor-move select-none"
+                      // Purely visual: pointer-events pass straight through to the
+                      // real (hidden) element wrappers underneath, so select / drag
+                      // / delete work exactly like standard print — no fragile
+                      // reverse hit-testing of a flattened bitmap.
+                      className="pointer-events-none absolute select-none"
                       style={{
                         left: `${designBbox.x * 100}%`,
                         top: `${designBbox.y * 100}%`,
@@ -2074,7 +2062,7 @@ export default function Designer() {
 
             {/* Off-screen embroidery renderer — turns the flattened design into
                 the stitched look whenever embroidery is the chosen technique. */}
-            {printTechnique === "embroidery" && embroiderySrc && (
+            {effectivePrintTechnique === "embroidery" && embroiderySrc && (
               <EmbroideryPreview
                 src={embroiderySrc}
                 maxSize={620}

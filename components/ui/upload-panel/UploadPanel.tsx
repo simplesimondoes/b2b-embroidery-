@@ -288,7 +288,7 @@ export function UploadPanel({ onPlaceImage }: { onPlaceImage: (url: string) => v
                         className="flex w-full cursor-pointer flex-col items-center gap-9"
                         onClick={openFilePicker}
                     >
-                        <span className="mt-10 text-neutral-200">
+                        <span className="mt-4 text-neutral-200">
                             <UploadIcon size={64} />
                         </span>
                         <div className="flex w-full flex-col items-center gap-3">
@@ -304,6 +304,9 @@ export function UploadPanel({ onPlaceImage }: { onPlaceImage: (url: string) => v
                             >
                                 Upload
                             </button>
+                            <p className="text-sm leading-5 text-neutral-500">
+                                SVG, JPEG, PNG allowed
+                            </p>
                         </div>
                     </div>
                     <div className="flex flex-col items-center gap-0.5 text-center">

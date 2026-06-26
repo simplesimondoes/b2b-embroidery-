@@ -12,7 +12,7 @@ export function GraphicEditorBar({ show, onDuplicate, onDelete }: GraphicEditorB
   return (
     <div
       data-editor-bar="true"
-      className="shadow-s absolute top-8 left-1/2 z-[5] flex h-[48px] -translate-x-1/2 items-center overflow-hidden rounded-full bg-white"
+      className="shadow-xs absolute top-8 left-1/2 z-[5] flex h-[48px] -translate-x-1/2 items-center overflow-hidden rounded-full bg-white"
     >
       <div className="flex h-full items-center gap-1 px-2">
         {/* Duplicate */}
