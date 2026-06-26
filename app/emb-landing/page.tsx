@@ -36,7 +36,7 @@ export default function EmbLandingPage() {
           <h1 className="font-display text-3xl font-[900] tracking-tight text-white sm:text-4xl">
 GET YOUR DESIGN EMBROIDERED
           </h1>
-          <GradientButton>Create now</GradientButton>
+          <GradientButton href="/">Create now</GradientButton>
         </div>
         </section>
 

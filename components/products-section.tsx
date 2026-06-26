@@ -118,7 +118,7 @@ export default function ProductsSection({ tiles }: { tiles: ProductTileData[] })
               We'll send you a close-up photo of your design embroidered on the product you order, so you can see the quality and details before before we continue with your order.
             </p>
             <div className="mt-8">
-              <GradientButton>Create now</GradientButton>
+              <GradientButton href="/">Create now</GradientButton>
             </div>
           </div>
         </div>

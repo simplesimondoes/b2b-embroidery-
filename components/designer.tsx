@@ -6,6 +6,7 @@ import * as Popover from "@radix-ui/react-popover"
 import { Basket, type BasketItem } from "@/components/basket"
 import EmbroideryPreview from "@/components/embroidery-preview"
 import ProductsDrawer, { type SelectedProduct } from "@/components/products-drawer"
+import { allTiles } from "@/lib/tiles"
 import SiteHeader from "@/components/site-header"
 import { IconsScroller } from "@/components/ui/icons-scroller"
 import { EditorBar } from "@/components/ui/editor-bar"
@@ -138,6 +139,21 @@ export default function Designer() {
   const [productsDrawerOpen, setProductsDrawerOpen] = useState(false)
   const [activePanel, setActivePanel] = useState<DesignerPanel | null>(null)
   const [welcomeOpen, setWelcomeOpen] = useState(true)
+  // Deep link from the landing page: ?product=<id> loads that product and skips
+  // the welcome popup so the user lands straight in the editor.
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("product")
+    if (!id) return
+    const tile = allTiles.find(t => t.id === id)
+    if (!tile) return
+    setSelectedProduct({
+      id: tile.id,
+      src: tile.image,
+      name: tile.name,
+      appearanceId: tile.appearanceId,
+    })
+    setWelcomeOpen(false)
+  }, [])
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [sizePopoverOpen, setSizePopoverOpen] = useState(false)
   const sizePopoverScrollRef = useRef<HTMLDivElement | null>(null)
@@ -208,6 +224,13 @@ export default function Designer() {
   // over the design) before revealing the stitched render — no opacity fade.
   const [embroideryShown, setEmbroideryShown] = useState(false)
   const [embroideryLoading, setEmbroideryLoading] = useState(false)
+  // Only the very first embroidery render of the session gets the
+  // "Embroidery preview…" label next to the spinner; later renders show just
+  // the spinner.
+  const embroideryEverShownRef = useRef(false)
+  // The first reveal is held an extra second (even after the render is ready)
+  // so the "Embroidery preview…" label is readable.
+  const [embroideryFirstDelayPassed, setEmbroideryFirstDelayPassed] = useState(false)
   // Source image fed to the embroidery renderer. Only updated when the design's
   // *appearance* (not its position) changes, so moving never regenerates it.
   const [embroiderySrc, setEmbroiderySrc] = useState<string | null>(null)
@@ -223,6 +246,7 @@ export default function Designer() {
   // Print technique (only relevant for embroidery-suitable products).
   const [printTechnique, setPrintTechnique] = useState<"standard" | "embroidery">("embroidery")
   const [printTechniqueOpen, setPrintTechniqueOpen] = useState(false)
+  const [printTechniqueMenuOpen, setPrintTechniqueMenuOpen] = useState(false)
   const [previewLoading, setPreviewLoading] = useState(false)
   // Flattened design (text + graphics combined) for the print-technique close-up,
   // and its embroidery-rendered counterpart.
@@ -860,8 +884,17 @@ export default function Designer() {
       setEmbroideryLoading(true)
       return
     }
+    // Render is ready. On the very first reveal of the session, keep the
+    // labelled loader up an extra second so the user can read it.
+    if (!embroideryEverShownRef.current && !embroideryFirstDelayPassed) {
+      setEmbroideryShown(false)
+      setEmbroideryLoading(true)
+      const t = setTimeout(() => setEmbroideryFirstDelayPassed(true), 1000)
+      return () => clearTimeout(t)
+    }
     setEmbroideryShown(true)
     setEmbroideryLoading(false)
+    embroideryEverShownRef.current = true
   }, [
     printTechnique,
     designBbox,
@@ -870,6 +903,7 @@ export default function Designer() {
     editingTextId,
     embroiderySettling,
     embroideryRenderStale,
+    embroideryFirstDelayPassed,
   ])
 
   // Embroidery clamps the design to a max area; warn when that shrinks it by >20%.
@@ -1897,7 +1931,32 @@ export default function Designer() {
                       src={embroideryRenderedUrl}
                       alt=""
                       draggable={false}
-                      className="pointer-events-none absolute select-none"
+                      data-graphic-element="true"
+                      onMouseDown={e => {
+                        // The flat (clickable) element is hidden under this
+                        // overlay, so forward the interaction to whichever element
+                        // sits under the pointer — keeps select/drag/delete working.
+                        const hit = (x: number, y: number, node?: HTMLElement) => {
+                          if (!node) return false
+                          const r = node.getBoundingClientRect()
+                          return x >= r.left && x <= r.right && y >= r.top && y <= r.bottom
+                        }
+                        for (let i = visibleGraphicElements.length - 1; i >= 0; i--) {
+                          const g = visibleGraphicElements[i]
+                          if (hit(e.clientX, e.clientY, graphicElementRefs.current[g.id])) {
+                            startGraphicDrag(e, g)
+                            return
+                          }
+                        }
+                        for (let i = visibleTextElements.length - 1; i >= 0; i--) {
+                          const t = visibleTextElements[i]
+                          if (hit(e.clientX, e.clientY, textElementRefs.current[t.id])) {
+                            startTextDrag(e, t)
+                            return
+                          }
+                        }
+                      }}
+                      className="absolute cursor-move select-none"
                       style={{
                         left: `${designBbox.x * 100}%`,
                         top: `${designBbox.y * 100}%`,
@@ -1911,14 +1970,23 @@ export default function Designer() {
                       circle with a light spinner. */}
                   {embroideryLoading && designBbox && (
                     <div
-                      className="pointer-events-none absolute flex items-center justify-center rounded-full bg-black p-2.5 shadow-lg"
+                      className={
+                        embroideryEverShownRef.current
+                          ? "pointer-events-none absolute flex items-center justify-center rounded-full bg-black p-2.5 shadow-lg"
+                          : "pointer-events-none absolute flex items-center gap-2.5 rounded-full bg-black py-2.5 pr-4 pl-2.5 shadow-lg"
+                      }
                       style={{
                         left: `${(designBbox.x + designBbox.w / 2) * 100}%`,
                         top: `${designBbox.y * 100}%`,
                         transform: "translate(-50%, -50%)",
                       }}
                     >
-                      <div className="h-7 w-7 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
+                      <div className="h-7 w-7 shrink-0 animate-spin rounded-full border-[3px] border-white/30 border-t-white" />
+                      {!embroideryEverShownRef.current && (
+                        <span className="text-sm font-medium whitespace-nowrap text-white">
+                          Embroidery preview…
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -2100,30 +2168,73 @@ export default function Designer() {
                   </div>
                 )}
                 {productData?.embroidery && (
-                  <button
-                    type="button"
-                    onClick={() => setPrintTechniqueOpen(true)}
-                    className="flex h-[48px] items-center gap-2 rounded-full bg-white px-4 text-sm font-medium text-black shadow-xs hover:bg-neutral-50 cursor-pointer"
+                  <Popover.Root
+                    open={printTechniqueMenuOpen}
+                    onOpenChange={setPrintTechniqueMenuOpen}
                   >
-                    <span>
-                      {printTechnique === "embroidery" ? "Embroidery" : "Standard print"}
-                    </span>
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 12 12"
-                      fill="none"
-                      className="text-neutral-500"
-                    >
-                      <path
-                        d="M2.5 4.5L6 8L9.5 4.5"
-                        stroke="currentColor"
-                        strokeWidth="1.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </button>
+                    <Popover.Trigger asChild>
+                      <button
+                        type="button"
+                        className="flex h-[48px] cursor-pointer items-center gap-2 rounded-full bg-white px-4 text-sm font-medium text-black shadow-xs hover:bg-neutral-50"
+                      >
+                        <span>
+                          {printTechnique === "embroidery" ? "Embroidery" : "Standard print"}
+                        </span>
+                        <svg
+                          width="12"
+                          height="12"
+                          viewBox="0 0 12 12"
+                          fill="none"
+                          className={`text-neutral-500 transition-transform duration-200 ${
+                            printTechniqueMenuOpen ? "rotate-180" : ""
+                          }`}
+                        >
+                          <path
+                            d="M2.5 4.5L6 8L9.5 4.5"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        </svg>
+                      </button>
+                    </Popover.Trigger>
+                    <Popover.Portal>
+                      <Popover.Content
+                        side="top"
+                        align="end"
+                        sideOffset={8}
+                        className="z-[100] w-52 overflow-hidden rounded-xl border border-neutral-200 bg-white shadow-lg outline-none"
+                      >
+                        {(["embroidery", "standard"] as const).map(tech => (
+                          <button
+                            key={tech}
+                            type="button"
+                            onClick={() => {
+                              setPrintTechnique(tech)
+                              setPrintTechniqueMenuOpen(false)
+                            }}
+                            className={`flex w-full cursor-pointer items-center justify-between gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-neutral-50 ${
+                              printTechnique === tech ? "bg-neutral-100 font-semibold" : ""
+                            }`}
+                          >
+                            <span>{tech === "embroidery" ? "Embroidery" : "Standard print"}</span>
+                            {printTechnique === tech && (
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path
+                                  d="M5 12.5L10 17.5L19 7"
+                                  stroke="currentColor"
+                                  strokeWidth="2.2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                />
+                              </svg>
+                            )}
+                          </button>
+                        ))}
+                      </Popover.Content>
+                    </Popover.Portal>
+                  </Popover.Root>
                 )}
               </div>
             )}

@@ -1,5 +1,6 @@
 "use client"
 
+import Link from "next/link"
 import { useRef } from "react"
 
 import ProductTile, { type ProductTileData } from "@/components/product-tile"
@@ -18,9 +19,13 @@ export default function ProductCarousel({ tiles }: { tiles: ProductTileData[] })
         className="flex gap-6 overflow-x-auto scroll-smooth pr-[90px] pb-2 pl-[90px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {tiles.map(t => (
-          <div key={t.id} className="w-[clamp(200px,22vw,272px)] shrink-0">
+          <Link
+            key={t.id}
+            href={`/?product=${t.id}`}
+            className="w-[clamp(200px,22vw,272px)] shrink-0"
+          >
             <ProductTile t={t} />
-          </div>
+          </Link>
         ))}
       </div>
       <button
