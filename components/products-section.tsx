@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 
 import GradientButton from "@/components/gradient-button"
 import CustomerReviews from "@/components/customer-reviews"
+import DeliveryTimes from "@/components/delivery-times"
 import FaqSection from "@/components/faq-section"
 import PriceCalculator from "@/components/price-calculator"
 import ProductCarousel, { type ProductTileData } from "@/components/product-carousel"
@@ -14,6 +15,7 @@ const TABS = [
   { label: "Our products", id: "our-products" },
   { label: "Get sample", id: "get-sample" },
   { label: "Calculate price", id: "calculate-price" },
+  { label: "Delivery times", id: "delivery-times" },
   { label: "Customer reviews", id: "customer-reviews" },
   { label: "FAQ", id: "faq" },
 ]
@@ -128,7 +130,10 @@ export default function ProductsSection({ tiles }: { tiles: ProductTileData[] })
       <section id="calculate-price" className="mt-9 scroll-mt-[110px] px-[90px] py-16">
         <PriceCalculator tiles={tiles} />
       </section>
-      <section id="customer-reviews" className="mt-9 scroll-mt-[110px] bg-neutral-100 px-[90px] py-16">
+      <section id="delivery-times" className="mt-9 scroll-mt-[110px] bg-neutral-100 px-[90px] py-16">
+        <DeliveryTimes />
+      </section>
+      <section id="customer-reviews" className="mt-9 scroll-mt-[110px] px-[90px] py-16">
         <h2 className="font-display text-2xl font-[900] text-black">CUSTOMER REVIEWS</h2>
         <div className="mt-8">
           <CustomerReviews />

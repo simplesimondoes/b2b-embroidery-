@@ -10,7 +10,12 @@ import MultiProductSelectDrawer, {
 import type { ProductTileData } from "@/components/product-tile"
 import QuantitySelector from "@/components/quantity-selector"
 import VolumeDiscountDialog from "@/components/volume-discount-dialog"
-import { SHIPPING_OPTIONS, type ShippingId } from "@/lib/shipping"
+import {
+  SHIPPING_OPTIONS,
+  deliveryWindow,
+  productionDaysForQty,
+  type ShippingId,
+} from "@/lib/shipping"
 import { cn } from "@/lib/utils"
 
 const eur = (n: number) => n.toFixed(2).replace(".", ",") + " €"
@@ -63,6 +68,16 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
   const shippingCost = totalPieces > 0 ? shippingOption.price : 0
   const finalTotal = grandTotal - discountAmount + embroideryCost + shippingCost
   const perPiece = totalPieces > 0 ? finalTotal / totalPieces : 0
+
+  // Estimated delivery = production lead time (scales with quantity) + the
+  // selected shipping speed. Recomputes as quantity or shipping changes.
+  const production = productionDaysForQty(totalPieces)
+  const delivery = deliveryWindow(
+    production.min,
+    production.max,
+    shippingOption.minDays,
+    shippingOption.maxDays
+  )
 
   const empty = rows.length === 0
 
@@ -253,6 +268,22 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
               </Popover.Root>
               <span className="text-base font-bold whitespace-nowrap text-black">
                 {eur(shippingCost)}
+              </span>
+            </div>
+          )}
+
+          {totalPieces > 0 && (
+            <div className="mt-1 flex items-center gap-2 border-t border-neutral-200 py-3">
+              <svg className="size-5 shrink-0 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                <rect x="3" y="4" width="18" height="18" rx="2" />
+                <path d="M16 2v4M8 2v4M3 10h18" />
+              </svg>
+              <span className="text-sm text-neutral-700">
+                Estimated delivery{" "}
+                <span className="font-semibold text-black">
+                  {delivery.fromLabel} – {delivery.toLabel}
+                </span>{" "}
+                with {shippingOption.label.toLowerCase()} shipping
               </span>
             </div>
           )}

@@ -1,7 +1,9 @@
+import B2BReassurance from "@/components/b2b-reassurance"
 import BeforeAfterCompare from "@/components/before-after-compare"
 import EmbLandingHeader from "@/components/emb-landing-header"
-import GradientButton from "@/components/gradient-button"
+import PillarsStrip from "@/components/pillars-strip"
 import ProductsSection from "@/components/products-section"
+import UploadLogoButton from "@/components/upload-logo-button"
 import { embroideryTiles } from "@/lib/tiles"
 
 export default function EmbLandingPage() {
@@ -36,7 +38,7 @@ export default function EmbLandingPage() {
           <h1 className="font-display text-3xl font-[900] tracking-tight text-white sm:text-4xl">
 GET YOUR DESIGN EMBROIDERED
           </h1>
-          <GradientButton href="/">Create now</GradientButton>
+          <UploadLogoButton />
         </div>
         </section>
 
@@ -51,8 +53,14 @@ GET YOUR DESIGN EMBROIDERED
         </div>
       </div>
 
+      {/* The three buyer pillars, stated upfront */}
+      <PillarsStrip />
+
       {/* Tabs + product carousel below the hero */}
       <ProductsSection tiles={embroideryTiles} />
+
+      {/* B2B trust layer */}
+      <B2BReassurance />
     </main>
   )
 }

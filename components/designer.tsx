@@ -218,8 +218,24 @@ export default function Designer() {
   const [welcomeOpen, setWelcomeOpen] = useState(true)
   // Deep link from the landing page: ?product=<id> loads that product and skips
   // the welcome popup so the user lands straight in the editor.
+  // A logo uploaded on the landing page is handed over via sessionStorage
+  // ("uploadedLogo") and auto-placed once the print area is ready (see below).
+  const [pendingLogoSrc, setPendingLogoSrc] = useState<string | null>(null)
+  const pendingLogoPlacedRef = useRef(false)
+  // Branded splash shown while a logo handed over from the landing page is being
+  // placed and stitched, so the ~1s embroidery render feels intentional.
+  const [arrivalSplash, setArrivalSplash] = useState(false)
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("product")
+    let logo: string | null = null
+    try {
+      logo = sessionStorage.getItem("uploadedLogo")
+      if (logo) sessionStorage.removeItem("uploadedLogo")
+    } catch {}
+    if (logo) {
+      setPendingLogoSrc(logo)
+      setArrivalSplash(true)
+    }
     if (!id) return
     const tile = allTiles.find(t => t.id === id)
     if (!tile) return
@@ -913,6 +929,29 @@ export default function Designer() {
   const visibleGraphicElements = currentPrintAreaId
     ? graphicElements.filter(g => g.printAreaId === currentPrintAreaId)
     : []
+  // Place a logo handed over from the landing page once the print area is laid
+  // out (so aspect ratio is correct). Runs once; addGraphicElement defaults a
+  // polo-front graphic to the left chest.
+  useEffect(() => {
+    if (!pendingLogoSrc || pendingLogoPlacedRef.current) return
+    if (!currentPrintAreaId || printAreaPxSize.width === 0) return
+    pendingLogoPlacedRef.current = true
+    addGraphicElement(pendingLogoSrc)
+    setPendingLogoSrc(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingLogoSrc, currentPrintAreaId, printAreaPxSize.width])
+
+  // Dismiss the arrival splash once the stitched preview is on screen, with a
+  // timeout fallback so it can never get stuck.
+  useEffect(() => {
+    if (!arrivalSplash) return
+    if (embroideryShown) {
+      setArrivalSplash(false)
+      return
+    }
+    const t = setTimeout(() => setArrivalSplash(false), 6000)
+    return () => clearTimeout(t)
+  }, [arrivalSplash, embroideryShown])
   // The live canvas content's on-screen square size (px) — fontSize is relative
   // to this, so the view-thumbnail previews use it to scale the design down.
   const liveCanvasContentSize =
@@ -1540,6 +1579,24 @@ export default function Designer() {
         #color-buttons-row::-webkit-scrollbar{display:none;}
         #color-buttons-row{scrollbar-width:none;}
       `}</style>
+
+      {/* Arrival splash: shown while a logo handed over from the landing page is
+          placed and stitched, so the embroidery render doesn't feel janky. */}
+      {arrivalSplash && (
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center gap-5 bg-white/85 backdrop-blur-sm">
+          <div className="relative h-12 w-12">
+            <div className="absolute inset-0 animate-spin rounded-full border-4 border-neutral-200 border-t-indigo-600" />
+          </div>
+          <div className="text-center">
+            <p className="font-display text-lg font-[900] tracking-tight text-black">
+              Stitching your preview…
+            </p>
+            <p className="mt-1 text-sm text-neutral-600">
+              Placing your logo and rendering the embroidery
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="h-screen w-full flex flex-col">
         <SiteHeader
