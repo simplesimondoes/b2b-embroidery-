@@ -147,13 +147,13 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
                     <p className="mt-0.5 text-sm font-medium text-neutral-500">{tile.price}</p>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-5">
+                <div className="flex shrink-0 items-center gap-2 sm:gap-5">
                   <QuantitySelector
                     quantity={qty}
                     onChange={q => setRowQty(tile.id, q)}
                     onDelete={() => removeRow(tile.id)}
                   />
-                  <span className="w-24 text-right text-base font-bold whitespace-nowrap text-black">
+                  <span className="w-20 text-right text-base font-bold whitespace-nowrap text-black sm:w-24">
                     {eur(tile.priceValue * qty)}
                   </span>
                 </div>

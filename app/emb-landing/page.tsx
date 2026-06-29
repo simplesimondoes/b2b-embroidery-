@@ -11,7 +11,7 @@ export default function EmbLandingPage() {
     <main className="min-h-screen overflow-x-clip bg-white">
       <EmbLandingHeader />
       <div className="relative mb-[100px]">
-        <section className="relative flex h-[560px] w-full items-center justify-center overflow-hidden">
+        <section className="relative flex h-[480px] w-full items-center justify-center overflow-hidden sm:h-[560px]">
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-80"
           style={{ backgroundImage: "url('/images/emb-bg.png')" }}
@@ -23,13 +23,13 @@ export default function EmbLandingPage() {
           <img
             src="/products/56/404/1.webp"
             alt=""
-            className="hero-float-a absolute top-[2%] right-[16%] w-[20rem] rotate-[6deg] blur-[3px]"
+            className="hero-float-a absolute top-[2%] right-[16%] w-40 rotate-[6deg] blur-[3px] sm:w-[20rem]"
           />
           {/* polo — soft ecru */}
           <img
             src="/products/2116/947/1.webp"
             alt=""
-            className="hero-float-c absolute top-[16%] left-[10%] w-76 rotate-[6deg] blur-[2px]"
+            className="hero-float-c absolute top-[16%] left-[10%] w-40 rotate-[6deg] blur-[2px] sm:w-76"
           />
         </div>
         <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-6/6 bg-gradient-to-t from-gray-800/45 to-gray-800/0" />
@@ -44,11 +44,11 @@ GET YOUR DESIGN EMBROIDERED
 
         {/* Baseball cap lives outside the hero's overflow-hidden so its bottom
             isn't clipped — it hangs past the hero's bottom edge. */}
-        <div className="pointer-events-none absolute top-0 left-1/2 z-20 h-[560px] w-full max-w-[1600px] -translate-x-1/2">
+        <div className="pointer-events-none absolute top-0 left-1/2 z-20 h-[480px] w-full max-w-[1600px] -translate-x-1/2 sm:h-[560px]">
           <img
             src="/products/15/10/1.webp"
             alt=""
-            className="hero-float-b absolute right-[3%] bottom-[-16%] w-100 -rotate-[-32deg]"
+            className="hero-float-b absolute right-[3%] bottom-[-16%] hidden w-52 -rotate-[-32deg] sm:block sm:w-100"
           />
         </div>
       </div>

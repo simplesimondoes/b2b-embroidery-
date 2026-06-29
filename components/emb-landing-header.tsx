@@ -12,7 +12,7 @@ export default function EmbLandingHeader() {
       </div>
 
       {/* Logo row: centered logo, account + cart on the right */}
-      <div className="mx-auto w-full max-w-[1920px] px-8">
+      <div className="mx-auto w-full max-w-[1920px] px-4 sm:px-8">
         <div className="grid h-16 w-full grid-cols-[1fr_auto_1fr] items-center">
           <div aria-hidden />
           <a href="#" aria-label="Spreadshirt" className="justify-self-center">
@@ -29,10 +29,11 @@ export default function EmbLandingHeader() {
         </div>
       </div>
 
-      {/* Nav row: primary links left, "Selber verkaufen" right */}
-      <div className="mx-auto w-full max-w-[1920px] px-8">
+      {/* Nav row: primary links left, "Selber verkaufen" right.
+          Hidden on mobile where it would collide — desktop nav unchanged. */}
+      <div className="mx-auto hidden w-full max-w-[1920px] px-4 sm:block sm:px-8">
         <nav className="flex h-12 w-full items-center justify-between">
-          <ul className="flex items-center gap-8 text-[18px] font-medium text-black">
+          <ul className="flex items-center gap-4 text-base font-medium text-black sm:gap-8 sm:text-[18px]">
             <li>
               <a href="#" className="hover:underline hover:decoration-2 underline-offset-4">
                 Gestalten
@@ -51,7 +52,7 @@ export default function EmbLandingHeader() {
           </ul>
           <a
             href="#"
-            className="inline-flex items-center gap-1 text-[18px] font-medium text-black hover:underline hover:decoration-2 underline-offset-4"
+            className="inline-flex shrink-0 items-center gap-1 text-base font-medium text-black hover:underline hover:decoration-2 underline-offset-4 sm:text-[18px]"
           >
             Selber verkaufen
             <svg

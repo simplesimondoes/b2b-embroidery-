@@ -50,15 +50,15 @@ export default function MultiProductSelectDrawer({
         <Drawer.Overlay className="fixed inset-0 z-[9998] bg-black/40" />
         <Drawer.Content className="fixed right-0 bottom-0 left-0 z-[9999] flex h-[calc(100dvh-32px)] flex-col rounded-t-2xl bg-white outline-none">
           <Drawer.Title className="sr-only">Select products and quantities</Drawer.Title>
-          <div className="flex min-h-11 items-center justify-between gap-4 px-6 pt-5 pb-4">
+          <div className="flex min-h-11 flex-wrap items-center justify-between gap-3 px-4 pt-5 pb-4 sm:px-6">
             <span className="font-display text-[16px] font-medium text-black">
               Select products and quantities
             </span>
             {/* fixed-height control area prevents layout shift between X and buttons */}
-            <div className="flex h-11 items-center justify-end">
+            <div className="flex items-center justify-end sm:h-11">
             {anySelected ? (
-              <div className="flex items-center gap-4">
-                <span className="text-base text-black">
+              <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4">
+                <span className="text-sm text-black sm:text-base">
                   {totalPieces} {totalPieces === 1 ? "piece" : "pieces"} in total ={" "}
                   <span className="font-bold">{eur(totalPrice)}</span>
                 </span>
@@ -66,7 +66,7 @@ export default function MultiProductSelectDrawer({
                 <button
                   type="button"
                   onClick={() => onSelectedChange({})}
-                  className="cursor-pointer border-2 border-black px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:border-transparent hover:bg-neutral-900 hover:text-white"
+                  className="cursor-pointer border-2 border-black px-3 py-2 text-sm font-semibold text-black transition-colors hover:border-transparent hover:bg-neutral-900 hover:text-white sm:px-5 sm:py-2.5"
                 >
                   Clear all selection
                 </button>
@@ -74,7 +74,7 @@ export default function MultiProductSelectDrawer({
                 <button
                   type="button"
                   onClick={() => onOpenChange(false)}
-                  className="cursor-pointer bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+                  className="cursor-pointer bg-black px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 sm:px-5 sm:py-2.5"
                 >
                   Show full calculation
                 </button>
@@ -92,8 +92,8 @@ export default function MultiProductSelectDrawer({
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-6 pb-6">
-            <div className="grid grid-cols-5 gap-x-4 gap-y-6">
+          <div className="flex-1 overflow-y-auto px-4 pb-6 sm:px-6">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 lg:grid-cols-5">
               {tiles.map(t => {
                 const checked = t.id in selected
                 return (

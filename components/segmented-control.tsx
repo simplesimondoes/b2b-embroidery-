@@ -18,7 +18,7 @@ export default function SegmentedControl({
   return (
     <div
       className={cn(
-        "inline-flex flex-wrap items-center gap-1 p-2 transition-colors duration-200",
+        "inline-flex max-w-full flex-wrap items-center justify-center gap-1 p-1.5 transition-colors duration-200 sm:p-2",
         // kit has no neutral-150 (jumps 100 #f4f4f4 → 200 #dedede); use the midpoint
         stuck ? "bg-[#e9e9e9]" : "bg-neutral-100"
       )}
@@ -30,7 +30,7 @@ export default function SegmentedControl({
           onClick={() => onChange(i)}
           aria-pressed={active === i}
           className={cn(
-            "cursor-pointer px-5 py-2.5 text-base font-semibold transition-[background-color,box-shadow] duration-200 ease-in-out",
+            "cursor-pointer px-3 py-2 text-sm font-semibold transition-[background-color,box-shadow] duration-200 ease-in-out sm:px-5 sm:py-2.5 sm:text-base",
             active === i
               ? "bg-white text-black shadow-sm"
               : "bg-transparent text-neutral-800 hover:text-black"

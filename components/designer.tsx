@@ -248,6 +248,9 @@ export default function Designer() {
     setWelcomeOpen(false)
   }, [])
   const [detailsOpen, setDetailsOpen] = useState(false)
+  // Mobile-only: the product details (colour / size / price / add-to-basket)
+  // live in a bottom sheet, since the desktop right rail has no room on a phone.
+  const [mobileDetailsOpen, setMobileDetailsOpen] = useState(false)
   const [sizePopoverOpen, setSizePopoverOpen] = useState(false)
   const sizePopoverScrollRef = useRef<HTMLDivElement | null>(null)
   const [sizePopoverOverflowTop, setSizePopoverOverflowTop] = useState(false)
@@ -1604,12 +1607,116 @@ export default function Designer() {
           onCartClick={() => setBasketOpen(true)}
           cartCount={basketItems.reduce((sum, it) => sum + it.qty, 0)}
         />
-        <div className="flex flex-1 flex-col px-8 py-[16px] min-h-0">
+
+        {/* Mobile top action bar: undo/redo · Colour pill · more. (md:hidden) */}
+        <div className="hidden items-center justify-between gap-2 border-b border-neutral-100 px-3 py-2 max-md:flex">
+          <div className="flex gap-1 text-neutral-300">
+            <span aria-hidden className="flex size-9 items-center justify-center rounded-full bg-neutral-100">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 14 4 9l5-5" /><path d="M4 9h11a5 5 0 0 1 0 10h-1" /></svg>
+            </span>
+            <span aria-hidden className="flex size-9 items-center justify-center rounded-full bg-neutral-100">
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 14 5-5-5-5" /><path d="M20 9H9a5 5 0 0 0 0 10h1" /></svg>
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setMobileDetailsOpen(true)}
+            className="flex items-center gap-2 rounded-full border border-neutral-300 bg-white px-4 py-1.5 text-sm font-medium text-black"
+          >
+            <span className="size-4 rounded-full border border-black/10" style={{ backgroundColor: appearances[activeColorIndex]?.color ?? "#ccc" }} />
+            Color
+            <svg className="h-4 w-4 text-neutral-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6" /></svg>
+          </button>
+          <button
+            type="button"
+            aria-label="Product details"
+            onClick={() => setDetailsOpen(true)}
+            className="flex size-9 items-center justify-center rounded-full bg-neutral-100 text-black"
+          >
+            <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6" /><circle cx="12" cy="12" r="1.6" /><circle cx="19" cy="12" r="1.6" /></svg>
+          </button>
+        </div>
+
+        {/* Mobile backdrop — dims behind an open sheet/panel, tap to close. */}
+        {(mobileDetailsOpen || activePanel) && (
+          <div
+            className="fixed inset-0 z-40 hidden bg-black/40 max-md:block"
+            onClick={() => {
+              setMobileDetailsOpen(false)
+              setActivePanel(null)
+            }}
+          />
+        )}
+
+        {/* Mobile bottom dock: tools + actions. (md:hidden, and hidden while a
+            sheet/panel is open so it doesn't overlap their content). */}
+        <div
+          className={
+            "fixed inset-x-0 bottom-0 z-[55] flex-col gap-2 border-t border-neutral-200 bg-white px-3 pb-3 pt-2 " +
+            (mobileDetailsOpen || activePanel ? "hidden" : "hidden max-md:flex")
+          }
+        >
+          <div className="flex justify-between gap-1">
+            {[
+              { id: "graphics", label: "Images", icon: "/icons/icon-graphics.svg", onClick: () => togglePanel("graphics") },
+              { id: "text", label: "Text", icon: "/icons/icon-text.svg", onClick: () => addTextElement() },
+              { id: "uploads", label: "Uploads", icon: "/icons/icon-upload.svg", onClick: () => togglePanel("uploads") },
+              { id: "ai", label: "AI", icon: "/icons/icon-sparkles-ai.svg", onClick: () => togglePanel("ai") },
+            ].map(t => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={t.onClick}
+                className={
+                  "flex flex-1 flex-col items-center gap-1 rounded-lg py-2 transition-colors " +
+                  (activePanel === t.id ? "bg-neutral-100" : "")
+                }
+              >
+                <img src={t.icon} alt="" className="h-6 w-6" />
+                <span className="text-[11px] font-semibold text-black">{t.label}</span>
+              </button>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setProductsDrawerOpen(true)}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-black"
+            >
+              <img src="/images/blankproduct.png" alt="" className="h-5 w-5 object-contain" />
+              Products
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileDetailsOpen(true)}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-neutral-200 py-2.5 text-sm font-semibold text-black"
+            >
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+              Details
+            </button>
+            <button
+              type="button"
+              onClick={() => setMobileDetailsOpen(true)}
+              className="flex flex-[1.4] items-center justify-center gap-1.5 rounded-lg p-[2px] text-sm font-semibold text-white"
+              style={{
+                backgroundImage:
+                  "linear-gradient(90deg, #dc2626 0%, #4d52d2 30%, #149744 50%, #10843b 65%, #4d52d2 80%, #dc2626 100%)",
+              }}
+            >
+              <span className="flex h-full w-full items-center justify-center gap-1.5 rounded-[7px] bg-neutral-900 px-2 py-2">
+                <img src="/icons/icon-cart.svg" alt="" className="h-5 w-5 [filter:invert(1)]" />
+                Add to basket
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col px-8 py-[16px] min-h-0 max-md:px-2 max-md:py-2 max-md:pb-[156px]">
         <div className="flex flex-1 items-center justify-center min-h-0">
-        <div ref={creatomatRef} id="creatomat-container" className="relative flex items-stretch gap-2 w-full max-w-[1920px] h-full justify-center">
+        <div ref={creatomatRef} id="creatomat-container" className="relative flex items-stretch gap-2 w-full max-w-[1920px] h-full justify-center max-md:flex-col max-md:gap-0">
           <div
             id="left-section"
-            className="shrink-0 w-[100px] p-[6px] px-1.5 h-full bg-[#F4F4F4] rounded-[12px] flex flex-col"
+            className="shrink-0 w-[100px] p-[6px] px-1.5 h-full bg-[#F4F4F4] rounded-[12px] flex flex-col max-md:hidden"
           >
             {/* Top Section - Products */}
             <div id="left-section-top-side" className="flex-shrink-0">
@@ -1790,6 +1897,7 @@ export default function Designer() {
                   </span>
                 )}
               </button>
+
             </div>
 
             {/* Bottom Section - Undo/Redo */}
@@ -2524,10 +2632,20 @@ export default function Designer() {
             {(["graphics", "uploads", "ai"] as const).map(panel => (
               <div
                 key={panel}
-                className={`absolute z-30 inset-y-[2px] left-[2px] w-[375px] rounded-[12px] bg-white shadow-[32px_0px_50px_0px_rgba(0,0,0,0.05)] flex flex-col transition-transform duration-300 ease-out ${
-                  activePanel === panel ? "translate-x-0" : "-translate-x-[calc(100%+100px)]"
+                className={`absolute z-30 inset-y-[2px] left-[2px] w-[375px] rounded-[12px] bg-white shadow-[32px_0px_50px_0px_rgba(0,0,0,0.05)] flex flex-col transition-transform duration-300 ease-out max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:left-0 max-md:top-auto max-md:z-[60] max-md:h-[82vh] max-md:w-full max-md:rounded-2xl max-md:rounded-b-none ${
+                  activePanel === panel
+                    ? "translate-x-0 max-md:translate-x-0 max-md:translate-y-0"
+                    : "-translate-x-[calc(100%+100px)] max-md:translate-x-0 max-md:translate-y-full"
                 }`}
               >
+                <button
+                  type="button"
+                  aria-label="Close panel"
+                  onClick={() => setActivePanel(null)}
+                  className="absolute right-3 top-4 z-10 hidden cursor-pointer max-md:block"
+                >
+                  <img src="/icons/icon-close-x.svg" alt="" className="h-6 w-6" />
+                </button>
                 <h2 className="font-display text-[18px] font-medium text-black px-6 pt-6 pb-4 capitalize flex-shrink-0">
                   {panel === "ai" ? "AI Image" : panel}
                 </h2>
@@ -2616,8 +2734,24 @@ export default function Designer() {
           <div
             ref={rightSectionRef}
             id="right-section"
-            className="shrink-0 w-[470px] p-[24px] pb-3 overflow-y-auto h-full bg-[#F4F4F4] rounded-[12px] flex flex-col"
+            className={
+              "shrink-0 w-[470px] p-[24px] pb-3 overflow-y-auto h-full bg-[#F4F4F4] rounded-[12px] flex flex-col " +
+              "max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:top-auto max-md:z-50 max-md:h-auto max-md:max-h-[85vh] max-md:w-full max-md:rounded-2xl max-md:rounded-b-none max-md:pb-6 max-md:shadow-[0_-8px_30px_rgba(0,0,0,0.18)] max-md:transition-transform max-md:duration-300 " +
+              (mobileDetailsOpen ? "max-md:translate-y-0" : "max-md:pointer-events-none max-md:translate-y-full")
+            }
           >
+            {/* Mobile sheet grab-handle + close */}
+            <div className="mb-2 hidden items-center justify-between max-md:flex">
+              <span className="mx-auto h-1 w-10 rounded-full bg-neutral-300" />
+              <button
+                type="button"
+                aria-label="Close details"
+                onClick={() => setMobileDetailsOpen(false)}
+                className="absolute right-4 top-3 cursor-pointer"
+              >
+                <img src="/icons/icon-close-x.svg" alt="" className="h-5 w-5" />
+              </button>
+            </div>
             <div id="top-part" className="flex-shrink-0">
               <div className="flex items-start justify-between mb-[8px]">
                 <h1 className="font-display text-[20px] font-[800] text-black leading-tight line-clamp-2">

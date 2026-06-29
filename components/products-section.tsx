@@ -86,7 +86,7 @@ export default function ProductsSection({ tiles }: { tiles: ProductTileData[] })
           stuck && "border-b border-neutral-200"
         )}
       >
-        <div className="flex justify-center px-[90px]">
+        <div className="flex justify-center px-3 sm:px-[90px]">
           <SegmentedControl
             items={TABS.map(t => t.label)}
             active={active}
@@ -102,7 +102,7 @@ export default function ProductsSection({ tiles }: { tiles: ProductTileData[] })
       </section>
 
       {/* Get sample — image with magnifier + copy */}
-      <section id="get-sample" className="mt-9 scroll-mt-[110px] bg-neutral-100 px-[90px] py-16">
+      <section id="get-sample" className="mt-9 scroll-mt-[110px] bg-neutral-100 px-6 py-12 sm:px-[90px] sm:py-16">
         <div className="grid grid-cols-1 items-center gap-14 lg:grid-cols-2">
           <div className="relative aspect-square w-full overflow-hidden bg-neutral-100">
             <img
@@ -127,20 +127,20 @@ export default function ProductsSection({ tiles }: { tiles: ProductTileData[] })
       </section>
 
       {/* Placeholder sections for the remaining tabs */}
-      <section id="calculate-price" className="mt-9 scroll-mt-[110px] px-[90px] py-16">
+      <section id="calculate-price" className="mt-9 scroll-mt-[110px] px-6 py-12 sm:px-[90px] sm:py-16">
         <PriceCalculator tiles={tiles} />
       </section>
-      <section id="delivery-times" className="mt-9 scroll-mt-[110px] bg-neutral-100 px-[90px] py-16">
+      <section id="delivery-times" className="mt-9 scroll-mt-[110px] bg-neutral-100 px-6 py-12 sm:px-[90px] sm:py-16">
         <DeliveryTimes />
       </section>
-      <section id="customer-reviews" className="mt-9 scroll-mt-[110px] px-[90px] py-16">
+      <section id="customer-reviews" className="mt-9 scroll-mt-[110px] px-6 py-12 sm:px-[90px] sm:py-16">
         <h2 className="font-display text-2xl font-[900] text-black">CUSTOMER REVIEWS</h2>
         <div className="mt-8">
           <CustomerReviews />
         </div>
       </section>
       {/* min-h-screen so the last tab can scroll its top under the sticky bar */}
-      <section id="faq" className="mt-9 min-h-screen scroll-mt-[110px] px-[90px] py-16">
+      <section id="faq" className="mt-9 min-h-screen scroll-mt-[110px] px-6 py-12 sm:px-[90px] sm:py-16">
         <FaqSection />
       </section>
     </div>
