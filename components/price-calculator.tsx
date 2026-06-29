@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import * as Popover from "@radix-ui/react-popover"
 
@@ -20,6 +20,12 @@ import { cn } from "@/lib/utils"
 
 const eur = (n: number) => n.toFixed(2).replace(".", ",") + " €"
 
+const SIZES = ["XS", "S", "M", "L", "XL", "2XL", "3XL"] as const
+// Per-product size breakdown: productId -> { size -> qty }.
+type SizeMatrix = Record<string, Partial<Record<(typeof SIZES)[number], number>>>
+const sizeSum = (row: SizeMatrix[string] | undefined) =>
+  row ? Object.values(row).reduce((a, b) => a + (b ?? 0), 0) : 0
+
 // Selection (productId -> quantity) is shared with the drawer so both stay in sync.
 export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] }) {
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -27,18 +33,73 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
   const [shippingOpen, setShippingOpen] = useState(false)
   const [shippingId, setShippingId] = useState<ShippingId>("standard")
   const [selection, setSelection] = useState<Selection>({})
+  // Optional per-size split for each product. When a product's breakdown is
+  // open, its sizes drive the row quantity.
+  const [sizeMatrix, setSizeMatrix] = useState<SizeMatrix>({})
+  const [sizeOpen, setSizeOpen] = useState<Record<string, boolean>>({})
+  const [quoteOpen, setQuoteOpen] = useState(false)
+  const [quoteRef, setQuoteRef] = useState("")
+  const [quoteDate, setQuoteDate] = useState("")
+  const [quoteCopied, setQuoteCopied] = useState(false)
 
   const shippingOption =
     SHIPPING_OPTIONS.find(o => o.id === shippingId) ?? SHIPPING_OPTIONS[0]
 
   const setRowQty = (id: string, qty: number) => setSelection(prev => ({ ...prev, [id]: qty }))
 
-  const removeRow = (id: string) =>
+  const clearAll = () => {
+    setSelection({})
+    setSizeMatrix({})
+    setSizeOpen({})
+  }
+
+  const removeRow = (id: string) => {
     setSelection(prev => {
       const next = { ...prev }
       delete next[id]
       return next
     })
+    setSizeMatrix(prev => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    setSizeOpen(prev => ({ ...prev, [id]: false }))
+  }
+
+  // Open/close a product's size breakdown. When opening for the first time,
+  // seed the current quantity into "M" so the total is preserved.
+  const toggleSize = (id: string) => {
+    const willOpen = !sizeOpen[id]
+    if (willOpen && !sizeMatrix[id]) {
+      setSizeMatrix(prev => ({ ...prev, [id]: { M: selection[id] ?? 0 } }))
+    }
+    setSizeOpen(prev => ({ ...prev, [id]: willOpen }))
+  }
+
+  const setSize = (id: string, size: (typeof SIZES)[number], qty: number) => {
+    setSizeMatrix(prev => ({
+      ...prev,
+      [id]: { ...(prev[id] ?? {}), [size]: Math.max(0, qty) },
+    }))
+  }
+
+  // Keep the row quantity in sync with the size breakdown while it's open.
+  useEffect(() => {
+    setSelection(prev => {
+      let changed = false
+      const next = { ...prev }
+      for (const id of Object.keys(sizeOpen)) {
+        if (!sizeOpen[id]) continue
+        const sum = sizeSum(sizeMatrix[id])
+        if (next[id] !== sum) {
+          next[id] = sum
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [sizeMatrix, sizeOpen])
 
   const byId = new Map(tiles.map(t => [t.id, t]))
   const rows = Object.entries(selection)
@@ -81,6 +142,55 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
 
   const empty = rows.length === 0
 
+  // Compact "S×5  M×10" label for a product's size split (quote + row summary).
+  const sizeLabel = (id: string) => {
+    const row = sizeMatrix[id]
+    if (!row) return ""
+    return SIZES.filter(s => (row[s] ?? 0) > 0)
+      .map(s => `${s}×${row[s]}`)
+      .join("  ")
+  }
+
+  const openQuote = () => {
+    const now = new Date()
+    setQuoteRef(`SPQ-${now.getFullYear()}-${String(now.getTime() % 100000).padStart(5, "0")}`)
+    setQuoteDate(now.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }))
+    setQuoteCopied(false)
+    setQuoteOpen(true)
+  }
+
+  const buildQuoteText = () => {
+    const lines: string[] = [
+      `Spreadshirt embroidery quote ${quoteRef}`,
+      `Date: ${quoteDate}`,
+      "",
+    ]
+    rows.forEach(r => {
+      lines.push(`${r.qty}× ${r.tile.brand} ${r.tile.name} — ${eur(r.tile.priceValue * r.qty)}`)
+      const sl = sizeLabel(r.tile.id)
+      if (sl) lines.push(`   Sizes: ${sl}`)
+    })
+    lines.push("")
+    lines.push(`Subtotal: ${eur(grandTotal)}`)
+    if (discountPct > 0)
+      lines.push(`Volume discount (−${Math.round(discountPct * 100)}%): −${eur(discountAmount)}`)
+    lines.push(`Embroidery (${totalPieces} pcs): ${eur(embroideryCost)}`)
+    lines.push(`${shippingOption.label} shipping: ${eur(shippingCost)}`)
+    lines.push(`Estimated delivery: ${delivery.fromLabel} – ${delivery.toLabel}`)
+    lines.push(`Total: ${eur(finalTotal)}`)
+    return lines.join("\n")
+  }
+
+  const copyQuote = async () => {
+    try {
+      await navigator.clipboard.writeText(buildQuoteText())
+      setQuoteCopied(true)
+      setTimeout(() => setQuoteCopied(false), 2000)
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
+
   return (
     <div className={cn("mx-auto w-full", empty ? "max-w-[500px]" : "max-w-[1200px]")}>
       <h2 className={cn("font-display text-2xl font-[900] text-black", empty && "text-center")}>
@@ -88,11 +198,11 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
       </h2>
 
       <div className="mt-6 border-2 border-neutral-200 p-6">
-        <div className={cn("flex items-center", empty ? "justify-center" : "justify-between")}>
+        <div className={cn("flex gap-3", empty ? "justify-center" : "flex-col sm:flex-row sm:items-center sm:justify-between")}>
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
-          className="flex w-fit cursor-pointer items-center gap-4 border-2 border-dashed border-neutral-300 px-6 py-5 text-black transition-colors hover:border-neutral-500"
+          className="flex w-full cursor-pointer items-center gap-4 border-2 border-dashed border-neutral-300 px-4 py-4 text-black transition-colors hover:border-neutral-500 sm:w-fit sm:px-6 sm:py-5"
         >
           <svg viewBox="0 0 20 20" fill="none" className="size-10 shrink-0" aria-hidden>
             <path
@@ -122,8 +232,8 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
           {!empty && (
             <button
               type="button"
-              onClick={() => setSelection({})}
-              className="cursor-pointer border-2 border-black px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:border-transparent hover:bg-neutral-900 hover:text-white"
+              onClick={clearAll}
+              className="shrink-0 cursor-pointer border-2 border-black px-5 py-2.5 text-sm font-semibold text-black transition-colors hover:border-transparent hover:bg-neutral-900 hover:text-white"
             >
               Clear all selection
             </button>
@@ -135,27 +245,93 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
             {rows.map(({ tile, qty }) => (
               <div
                 key={tile.id}
-                className="flex items-center justify-between gap-4 border-b border-neutral-200 py-4 last:border-b-0"
+                className="border-b border-neutral-200 py-4 last:border-b-0"
               >
-                <div className="flex min-w-0 items-center gap-4">
-                  <div className="h-14 w-14 shrink-0 overflow-hidden bg-neutral-100">
-                    <img src={tile.image} alt="" className="h-full w-full object-contain" />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="h-14 w-14 shrink-0 overflow-hidden bg-neutral-100">
+                      <img src={tile.image} alt="" className="h-full w-full object-contain" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-black">{tile.brand}</p>
+                      <p className="truncate text-sm text-neutral-700">{tile.name}</p>
+                      <p className="mt-0.5 text-sm font-medium text-neutral-500">{tile.price}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-bold text-black">{tile.brand}</p>
-                    <p className="truncate text-sm text-neutral-700">{tile.name}</p>
-                    <p className="mt-0.5 text-sm font-medium text-neutral-500">{tile.price}</p>
+                  <div className="flex shrink-0 items-center gap-2 sm:gap-5">
+                    {sizeOpen[tile.id] ? (
+                      <span className="flex items-center gap-2 text-sm font-semibold text-neutral-700">
+                        {qty} {qty === 1 ? "pc" : "pcs"}
+                        <button
+                          type="button"
+                          onClick={() => removeRow(tile.id)}
+                          aria-label="Remove product"
+                          className="cursor-pointer text-neutral-400 hover:text-neutral-700"
+                        >
+                          <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" /></svg>
+                        </button>
+                      </span>
+                    ) : (
+                      <QuantitySelector
+                        quantity={qty}
+                        onChange={q => setRowQty(tile.id, q)}
+                        onDelete={() => removeRow(tile.id)}
+                      />
+                    )}
+                    <span className="w-20 text-right text-base font-bold whitespace-nowrap text-black sm:w-24">
+                      {eur(tile.priceValue * qty)}
+                    </span>
                   </div>
                 </div>
-                <div className="flex shrink-0 items-center gap-2 sm:gap-5">
-                  <QuantitySelector
-                    quantity={qty}
-                    onChange={q => setRowQty(tile.id, q)}
-                    onDelete={() => removeRow(tile.id)}
-                  />
-                  <span className="w-20 text-right text-base font-bold whitespace-nowrap text-black sm:w-24">
-                    {eur(tile.priceValue * qty)}
-                  </span>
+
+                {/* Size / quantity matrix */}
+                <div className="mt-2 sm:pl-[72px]">
+                  <button
+                    type="button"
+                    onClick={() => toggleSize(tile.id)}
+                    className="flex cursor-pointer items-center gap-1 text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                  >
+                    <svg viewBox="0 0 24 24" className={cn("size-4 transition-transform", sizeOpen[tile.id] && "rotate-90")} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 6 6 6-6 6" /></svg>
+                    {sizeOpen[tile.id] ? "Hide size breakdown" : "Add size breakdown"}
+                  </button>
+                  {sizeOpen[tile.id] && (
+                    <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-7">
+                      {SIZES.map(sz => {
+                        const q = sizeMatrix[tile.id]?.[sz] ?? 0
+                        return (
+                          <div
+                            key={sz}
+                            className={cn(
+                              "flex min-w-0 flex-col items-center rounded-lg border px-1 py-1.5",
+                              q > 0 ? "border-indigo-300 bg-indigo-50/50" : "border-neutral-200"
+                            )}
+                          >
+                            <span className="text-xs font-bold text-neutral-600">{sz}</span>
+                            <div className="mt-1 flex items-center gap-0.5">
+                              <button
+                                type="button"
+                                onClick={() => setSize(tile.id, sz, q - 1)}
+                                aria-label={`Decrease ${sz}`}
+                                className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100 disabled:opacity-40"
+                                disabled={q === 0}
+                              >
+                                −
+                              </button>
+                              <span className="w-6 shrink-0 text-center text-sm font-semibold tabular-nums">{q}</span>
+                              <button
+                                type="button"
+                                onClick={() => setSize(tile.id, sz, q + 1)}
+                                aria-label={`Increase ${sz}`}
+                                className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded border border-neutral-300 text-neutral-700 hover:bg-neutral-100"
+                              >
+                                +
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -299,6 +475,17 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
               )}
             </div>
           </div>
+
+          {totalPieces > 0 && (
+            <button
+              type="button"
+              onClick={openQuote}
+              className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 border-2 border-black py-3 text-sm font-semibold text-black transition-colors hover:bg-neutral-900 hover:text-white"
+            >
+              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><path d="M14 2v6h6M9 13h6M9 17h6" /></svg>
+              Save &amp; share quote
+            </button>
+          )}
         </div>
       </div>
 
@@ -311,6 +498,108 @@ export default function PriceCalculator({ tiles }: { tiles: ProductTileData[] })
       />
 
       <VolumeDiscountDialog open={discountInfoOpen} onOpenChange={setDiscountInfoOpen} />
+
+      {/* Quote summary — a shareable, procurement-friendly snapshot of the order. */}
+      {quoteOpen && (
+        <div
+          className="fixed inset-0 z-[200] flex items-end justify-center bg-black/50 p-0 sm:items-center sm:p-4"
+          onClick={() => setQuoteOpen(false)}
+        >
+          <div
+            className="flex max-h-[90vh] w-full max-w-[560px] flex-col overflow-hidden rounded-t-2xl bg-white sm:rounded-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b border-neutral-200 px-6 py-5">
+              <div>
+                <h3 className="font-display text-xl font-[900] text-black">YOUR QUOTE</h3>
+                <p className="mt-1 text-sm text-neutral-500">
+                  Ref <span className="font-semibold text-black">{quoteRef}</span> · {quoteDate}
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={() => setQuoteOpen(false)}
+                className="cursor-pointer text-neutral-400 hover:text-neutral-700"
+              >
+                <svg viewBox="0 0 24 24" className="size-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18M6 6l12 12" /></svg>
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {rows.map(({ tile, qty }) => (
+                <div key={tile.id} className="flex justify-between gap-4 border-b border-neutral-100 py-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-black">
+                      {qty}× {tile.brand} {tile.name}
+                    </p>
+                    {sizeLabel(tile.id) && (
+                      <p className="mt-0.5 text-sm text-neutral-500">Sizes: {sizeLabel(tile.id)}</p>
+                    )}
+                  </div>
+                  <span className="shrink-0 font-bold whitespace-nowrap text-black">
+                    {eur(tile.priceValue * qty)}
+                  </span>
+                </div>
+              ))}
+
+              <dl className="mt-4 space-y-1.5 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-neutral-600">Subtotal</dt>
+                  <dd className="font-medium text-black">{eur(grandTotal)}</dd>
+                </div>
+                {discountPct > 0 && (
+                  <div className="flex justify-between">
+                    <dt className="text-[#DC2626]">Volume discount (−{Math.round(discountPct * 100)}%)</dt>
+                    <dd className="font-medium text-[#DC2626]">−{eur(discountAmount)}</dd>
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <dt className="text-neutral-600">Embroidery ({totalPieces} pcs)</dt>
+                  <dd className="font-medium text-black">{eur(embroideryCost)}</dd>
+                </div>
+                <div className="flex justify-between">
+                  <dt className="text-neutral-600">{shippingOption.label} shipping</dt>
+                  <dd className="font-medium text-black">{eur(shippingCost)}</dd>
+                </div>
+                <div className="flex justify-between border-t border-neutral-200 pt-2 text-base">
+                  <dt className="font-bold text-black">Total</dt>
+                  <dd className="font-display font-[900] text-black">{eur(finalTotal)}</dd>
+                </div>
+              </dl>
+
+              <p className="mt-4 flex items-center gap-2 rounded-lg bg-neutral-100 px-3 py-2 text-sm text-neutral-700">
+                <svg className="size-4 shrink-0 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" /><path d="M16 2v4M8 2v4M3 10h18" /></svg>
+                Estimated delivery{" "}
+                <span className="font-semibold text-black">
+                  {delivery.fromLabel} – {delivery.toLabel}
+                </span>
+              </p>
+              <p className="mt-3 text-xs text-neutral-500">
+                Indicative quote based on current pricing and capacity. VAT shown
+                at checkout. Valid for 14 days.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-2 border-t border-neutral-200 px-6 py-4 sm:flex-row">
+              <button
+                type="button"
+                onClick={copyQuote}
+                className="flex flex-1 cursor-pointer items-center justify-center gap-2 border-2 border-black py-3 text-sm font-semibold text-black transition-colors hover:bg-neutral-900 hover:text-white"
+              >
+                {quoteCopied ? "Copied!" : "Copy quote"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setQuoteOpen(false)}
+                className="flex-1 cursor-pointer bg-black py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
